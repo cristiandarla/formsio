@@ -1,1 +1,1 @@
-web: gunicorn formsio_app.app:app
+web: gunicorn formsio_app.app
