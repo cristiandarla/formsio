@@ -1,0 +1,1 @@
+FLASK_APP=formsio_app/app.py FLASK_ENV=development flask run
