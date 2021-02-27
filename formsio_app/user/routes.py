@@ -11,10 +11,10 @@ def login():
 
 @app.route('/signup', methods=['GET'])
 def signup_get():
-  return render_template('signup.html')
+  return render_template('signup.html'), 200
 @app.route('/login', methods=['GET'])
 def login_get():
-  return render_template('login.html')
+  return render_template('login.html', style='custom'), 200
 
 @app.route('/signout')
 def signout():
