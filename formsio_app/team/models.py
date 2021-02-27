@@ -1,13 +1,10 @@
 from flask import Flask, jsonify, request, session, redirect
 from passlib.hash import pbkdf2_sha256
 from app import db
-import uuid, os
-from random import choice, shuffle
-
-icons = ['profile1.png', 'profile2.png', 'profile3.png','profile4.png', 'profile5.png', 'profile6.png']
+import uuid
 
 class User:
-             
+
   def start_session(self, user):
     del user['password']
     session['logged_in'] = True
@@ -22,8 +19,7 @@ class User:
       "_id": uuid.uuid4().hex,
       "name": request.form.get('name'),
       "email": request.form.get('email'),
-      "password": request.form.get('password'),
-      "user_icon": "/assets/profile/" + choice(icons)
+      "password": request.form.get('password')
     }
 
     # Encrypt the password
