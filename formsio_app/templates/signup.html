@@ -1,25 +1,26 @@
 {% extends "base.html" %}
 {%block content%}
 <div class="loginCard">
-    <form id="signup" action="/signup" method="POST">
-        <div class="form-group">
-          <input type="text" class="form-control" id="name" name="name" placeholder="Firstname and lastname" required>
-        </div>
-        <div class="form-group">
-          <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
-        </div>
-        <div class="form-group">
-          <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-        </div>
-        <div class="form-group">
-          <input type="password" class="form-control" id="rpassword" name="rpassword" placeholder="Confirm password" required>
-        </div>
-        <div class="custom-control custom-switch">
-          <input type="checkbox" class="custom-control-input" id="privacy">
-          <label class="custom-control-label" for="privacy">Toggle this switch element</label>
-        </div>
-        <input type="submit" class="btn btn-primary" value="Submit" onclick="return Validate()"/>
-      </form>
+  <form id="signup" action="/signup" method="POST">
+    <h1 class="welcome">Join us!</h1>
+    <div class="form-group">
+      <input type="text" class="form-control" id="name" name="name" placeholder="Firstname and lastname" required>
+    </div>
+    <div class="form-group">
+      <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+    </div>
+    <div class="form-group">
+      <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+    </div>
+    <div class="form-group">
+      <input type="password" class="form-control" id="rpassword" name="rpassword" placeholder="Confirm password" required>
+    </div>
+    <div class="custom-control custom-switch">
+      <input type="checkbox" class="custom-control-input" id="privacy">
+      <label class="custom-control-label" for="privacy">Toggle this switch element</label>
+    </div>
+    <input type="submit" class="btn btn-primary" value="Submit" onclick="return Validate()"/>
+  </form>
 </div>
 <script src="{{ url_for('static', filename='js/signup.js') }}"></script>
 {%endblock%}
