@@ -22,19 +22,20 @@ $(document).ready(function() {
             }, 2000);
         },
         error: function(resp) {
-            console.error(resp);
-            if(resp.status == 500 || resp.status == 0){
+            if(resp.status == 400 || resp.status == 401){
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: resp.responseJSON.error
+                });
+            }else if(resp.status == 500 || resp.status == 0){
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
                     text: "Server error! Ask tech support."
                 });
             }else{
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: resp.responseJSON.error
-                });
+                console.error(resp)
             }
         }
         });

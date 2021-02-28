@@ -14,20 +14,20 @@ $(document).ready(function() {
             window.location.href = "/profile";
         },
         error: function(resp) {
-            
-            if(resp.status == 500){
-                console.error(resp);
+            if(resp.status == 400 || resp.status == 401){
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: resp.responseJSON.error
+                });
+            }else if(resp.status == 500 || resp.status == 0){
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
                     text: "Server error! Ask tech support."
                 });
             }else{
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: resp.responseJSON.error
-                });
+                console.error(resp)
             }
         }
         });    
