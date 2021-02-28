@@ -4,7 +4,7 @@ from formsio_app.app import db
 import uuid, os
 from random import choice, shuffle
 
-icons = ['profile1.png', 'profile2.png', 'profile3.png','profile4.png', 'profile5.png', 'profile6.png']
+icons = ['profile1.jpg', 'profile2.jpg', 'profile3.jpg','profile4.jpg', 'profile5.jpg', 'profile6.jpg']
 
 class User:
              
@@ -15,7 +15,6 @@ class User:
     return jsonify(user), 200
 
   def signup(self):
-    print(request.form)
 
     # Create the user object
     user = {

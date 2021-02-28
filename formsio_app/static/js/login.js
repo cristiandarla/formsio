@@ -14,11 +14,21 @@ $(document).ready(function() {
             window.location.href = "/profile";
         },
         error: function(resp) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: resp.responseJSON.error
-            })
+            
+            if(resp.status == 500){
+                console.error(resp);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: "Server error! Ask tech support."
+                });
+            }else{
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: resp.responseJSON.error
+                });
+            }
         }
         });    
         e.preventDefault();

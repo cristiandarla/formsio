@@ -11,7 +11,7 @@ app.secret_key = "ceva"
 
 # Database
 
-db = pymongo.MongoClient("mongodb+srv://cristiandarla:" + os.getenv("DB_PASS") + "@cluster0.brovt.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")['formsio']
+db = pymongo.MongoClient(os.getenv("MONGO_URI"))['formsio']
 
 # Decorators
 def login_required(f):
@@ -46,3 +46,13 @@ def home():
 @login_required
 def profile():
   return render_template('profile.html')
+
+@app.errorhandler(403)
+def page_not_found(e):
+    return render_template('403.html', custom='404.css'), 403
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html', custom='404.css'), 404
+@app.errorhandler(500)
+def page_not_found(e):
+    return render_template('500.html', custom='404.css'), 500

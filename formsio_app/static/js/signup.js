@@ -22,7 +22,8 @@ $(document).ready(function() {
             }, 2000);
         },
         error: function(resp) {
-            if(resp.status == 500){
+            console.error(resp);
+            if(resp.status == 500 || resp.status == 0){
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
