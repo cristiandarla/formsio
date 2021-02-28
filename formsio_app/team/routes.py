@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from app import app
+from formsio_app.app import app
 
 @app.route('/team')
 def team():

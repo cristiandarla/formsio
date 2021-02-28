@@ -35,8 +35,8 @@ def no_login_required(f):
   return wrap
 
 # Routes
-from user import routes as user_routes
-from team import routes as team_routes
+from .user import routes as user_routes
+from .team import routes as team_routes
 
 @app.route('/')
 def home():

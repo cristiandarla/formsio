@@ -1,1 +1,1 @@
-web: gunicorn formsio_app.app
+web: gunicorn wsgi:app

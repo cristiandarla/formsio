@@ -1,6 +1,6 @@
 from flask import Flask, render_template
-from app import app
-from user.models import User
+from formsio_app.app import app
+from .models import User
 
 @app.route('/signup', methods=['POST'])
 def signup():

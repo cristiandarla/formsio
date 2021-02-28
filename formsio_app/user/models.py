@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, session, redirect
 from passlib.hash import pbkdf2_sha256
-from app import db
+from formsio_app.app import db
 import uuid, os
 from random import choice, shuffle
 
