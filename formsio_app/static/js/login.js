@@ -26,8 +26,14 @@ $(document).ready(function() {
                     title: 'Oops...',
                     text: "Server error! Ask tech support."
                 });
+            }else if(resp.status == 503){
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: "Server error! Request timed out..."
+                });
             }else{
-                console.error(resp)
+                console.error(resp);
             }
         }
         });    
