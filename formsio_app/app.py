@@ -11,7 +11,7 @@ app.secret_key = "ceva"
 
 # Database
 
-db = pymongo.MongoClient(os.getenv("MONGO_URI"))['formsio']
+db = pymongo.MongoClient(os.getenv("MONGODB_URI"))['formsio']
 
 # Decorators
 def login_required(f):
