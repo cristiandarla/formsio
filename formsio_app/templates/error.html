@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {%block content%}
 <div class="wrapper-neon d-flex flex-column justify-content-around">
-    <p class="neon">404<br>
-        PAGE NOT FOUND
-    </p>
+    <h1 class="neon">{{ code }}<br>
+        {{ error }}
+    </h1>
     <input type="button" class="btn btn-primary button-neon" onclick="window.location.href='/'" value="Back to safe zone"/>
 </div>
 {%endblock%}

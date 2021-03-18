@@ -1,30 +1,83 @@
 {% extends "base.html" %}
 {%block content%}
 <div class="wrapper-profile">
+  <div class="modal fade" id="modalAddress" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">New Address</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="/profile/address" method="POST" id="address">
+          <div class="modal-body">
+              <div class="form-group">
+                <label for="recipient-name" class="col-form-label">Address:</label>
+                <input type="text" class="form-control" id="recipient-name" name="address" value="{{ session['user'].address }}">
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Change address</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="modalPhone" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Phone number</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="/profile/phone" method="POST" id="phone">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="recipient-name" class="col-form-label">Phone:</label>
+              <input type="text" class="form-control" id="recipient-name" name="phone" value="{{ session['user'].phone }}">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Change phone</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
     <img src="{{ url_for('static', filename=session['user'].user_icon)}}" alt="">
 
     <div class="container-profile">
       <p><strong>Name:</strong> {{ session['user'].name }}</p>
       <p><strong>E-mail:</strong> {{ session['user'].email }}</p>
-      <p><strong>Phone Number:</strong>
+      <p><strong>Phone Number:</strong><a href="#" data-toggle="modal" data-target="#modalPhone">
         {% if  session['user'].phone is defined %}
         {{ session['user'].phone }}
         {% else %}
-        <em>add your number</em>
-        {% endif %}
+        <em class="no-number">add your number</em>
+        {% endif %}</a>
       </p>
-      <p><strong>Address:</strong> 
+      <p><strong>Address:</strong> <a href="#" data-toggle="modal" data-target="#modalAddress">
         {% if  session['user'].address is defined %}
         {{ session['user'].address }}
         {% else %}
-        <em>add your address</em>
-        {% endif %}</p>
+        <em class="no-address">add your address</em>
+        {% endif %}</a></p>
       <p><strong>Team: </strong>
-        <em>-</em></p>
+        {% if  session['user'].team is defined %}
+        {{ session['user']['team'].name }}
+        {% else %}
+        <em>-</em>
+        {% endif %}</p>
+      </p>
     </div>
 
-    <input type="create" class="btn btn-primary" value="Create a Team"/>
-
-    <input type="join" class="btn btn-primary" value="Join a Team"/>
+    <input type="button" class="btn btn-primary" value="Create a Team" onclick="window.location.href='/team/add'"/>
+    <input type="button" class="btn btn-primary" value="Join a Team" onclick="window.location.href='/team/join'"/>
 </div>
 {%endblock%}

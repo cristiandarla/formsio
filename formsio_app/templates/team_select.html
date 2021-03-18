@@ -1,3 +1,31 @@
 {% extends "base.html" %}
 {%block content%}
+{% if teams|length == 0 %}
+<div class="wrapper-neon d-flex flex-column justify-content-around">
+    <p class="neon">There is no team added!</p>
+    <p class="neon">Add a team using the button below!</p>
+    <input type="button" class="btn btn-primary button-neon" onclick="window.location.href='/team/add'" value="Add a team"/>
+</div>
+{% else %}
+<form action="/team/join" method="POST" id="team-join">
+    {% for team in teams %}
+        {% if  team.name == session['user']['team'].name %}
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="team" id="team{{ loop.index }}" value="{{ team._id }}" checked>
+            <label class="form-check-label" for="team{{ loop.index }}">
+                {{ team.name }}
+            </label>
+        </div>
+        {% else %}
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="team" id="team{{ loop.index }}" value="{{ team._id }}">
+            <label class="form-check-label" for="team{{ loop.index }}">
+                {{ team.name }}
+            </label>
+        </div>
+        {% endif %}
+    {% endfor %}
+    <input type="submit" class="btn btn-primary" value="Submit"/>
+</form>
+{% endif %}
 {%endblock%}

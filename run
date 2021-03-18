@@ -1,1 +1,1 @@
-FLASK_APP=formsio_app/app.py FLASK_ENV=development flask run
+killall gunicorn | gunicorn -w 4 --bind 0.0.0.0:5000 wsgi:app --reload

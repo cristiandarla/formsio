@@ -24,7 +24,7 @@ class User:
       "password": request.form.get('password'),
       "user_icon": "/assets/profile/" + choice(icons)
     }
-
+    
     # Encrypt the password
     user['password'] = pbkdf2_sha256.encrypt(user['password'])
 
@@ -51,3 +51,29 @@ class User:
       return self.start_session(user)
     
     return jsonify({ "error": "Invalid login credentials" }), 401
+
+  def change_phone(self):
+    phone = request.form.get("phone")
+    if "user" in session:
+      if db.users.update_many({"_id" : session['user']['_id']}, {"$set" : {"phone" : phone }}):
+        user = db.users.find_one({ "_id": session['user']['_id'] })
+        session['user'] = user
+
+        return jsonify(user), 200
+      else:
+        return jsonify({"error" : "Could not update the user." }), 400
+    else:
+      return jsonify({"error" : "Could not find the user." }), 400
+
+  def change_address(self):
+    address = request.form.get("address")
+    if "user" in session:
+      if db.users.update_many({"_id" : session['user']['_id']}, {"$set" : {"address" : address }}):
+        user = db.users.find_one({ "_id": session['user']['_id'] })
+        session['user'] = user
+
+        return jsonify(user), 200
+      else:
+        return jsonify({"error" : "Could not update the user." }), 400
+    else:
+      return jsonify({"error" : "Could not find the user." }), 400

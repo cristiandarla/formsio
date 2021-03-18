@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{%block content%}
+<div class="wrapper-profile">
+    <h2>Hello, {{ session['user'].name }}!</h2>
+    <input type="button" value="Create a new form" class="btn btn-primary" onclick="window.location.href=`{{ url_for('create_form')}}`">
+    <input type="button" value="Your forms" class="btn btn-primary" onclick="window.location.href=`{{ url_for('get_forms')}}`">
+</div>
+{%endblock%}

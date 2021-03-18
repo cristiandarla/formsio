@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 {%block content%}
-<div class="team-add">
-    <form action="/team/add" method="post"></form>
+<div class="loginCard">
+    <form id="team-add" action="/team/add" method="POST">
+      <h1 class="welcome">Add a new team!</h1>
+      <div class="form-group">
+        <input type="text" class="form-control" id="team" name="team" placeholder="Team name" required>
+      </div>
+      <input type="submit" class="btn btn-primary" value="Submit"/>
+    </form>
 </div>
+<!--<script src="{{ url_for('static', filename='js/team_add.js') }}"></script> -->
 {%endblock%}

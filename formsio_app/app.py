@@ -1,4 +1,5 @@
-from flask import Flask, render_template, session, redirect
+from flask import Flask, render_template, session,\
+                  redirect, request, url_for, flash
 from dotenv import load_dotenv
 from functools import wraps
 import pymongo
@@ -7,11 +8,18 @@ import os
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "ceva"
+app.secret_key = os.getenv("APP_SECRET_KEY")
 
 # Database
 
 db = pymongo.MongoClient(os.getenv("MONGODB_URI"))['formsio']
+
+# Utilities
+
+def redirect_url(default='profile'):
+    return request.args.get('next') or \
+           request.referrer or \
+           url_for(default)
 
 # Decorators
 def login_required(f):
@@ -20,6 +28,7 @@ def login_required(f):
     if 'logged_in' in session:
       return f(*args, **kwargs)
     else:
+      flash("That page cannot be accessed now! you should be logged in!")
       return redirect('/')
   
   return wrap
@@ -30,29 +39,28 @@ def no_login_required(f):
     if 'logged_in' not in session:
       return f(*args, **kwargs)
     else:
-      return redirect('/')
+      flash("That page cannot be accessed while logged in!")
+      return redirect(redirect_url())
   
   return wrap
 
 # Routes
-from .user import routes as user_routes
-from .team import routes as team_routes
+from .data_models.user import routes as user_routes
+from .data_models.team import routes as team_routes
+#from .data_models.answer import routes as answer_routes
+from .data_models.form import routes as form_routes
+#from .data_models.question import routes as question_routes
 
 @app.route('/')
 def home():
   return render_template('home.html')
 
-@app.route('/profile')
-@login_required
-def profile():
-  return render_template('profile.html')
-
 @app.errorhandler(403)
 def page_not_found(e):
-    return render_template('403.html'), 403
+    return render_template('error.html', code = 403, error = 'FORBIDDEN'), 403
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html'), 404
+    return render_template('error.html', code = 404, error = 'PAGE NOT FOUND'), 404
 @app.errorhandler(500)
 def page_not_found(e):
-    return render_template('500.html'), 500
+    return render_template('error.html', code = 500, error = 'SERVER ERROR'), 500

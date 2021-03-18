@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{%block content%}
+<div class="forms" id="forms">
+    {% for form in forms %}
+    <div class="row">
+        <div class="col-12" id="ind-form">
+            {{ form.title }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{%endblock%}
