@@ -7,8 +7,8 @@
                 <div class="modal-body">
                     <form id="add-question">
                         <input type="text" id="_id" name="_id" value="" hidden>
-                        <textarea placeholder="write down the question..." class="form-control question" name="question" id="question" rows="3"></textarea>
-                        <select class="form-control my-3 qtype" name="qtype" id="qtype">
+                        <textarea placeholder="write down the question..." class="form-control question" name="question" id="question" rows="3" disabled="yes"></textarea>
+                        <select class="form-control my-3 qtype" name="qtype" id="qtype" disabled>
                             <option value="text" selected>text</option>
                             <option value="checkbox">checkbox</option>
                             <option value="radio">radio</option>
@@ -19,33 +19,21 @@
                         <div class="scrollable-div answers" id="answers">
                         </div>
                     </form>
-                    <div id="btn-ans" class="btn-ans" onclick="addNewAnswer()">Press here to add another answer</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-snd" data-dismiss="modal">Back</button>
-                    <button type="button" class="btn-prm" onclick="addQuestion()" id="addq">Add</button>
-                    <button type="button" class="btn-prm" onclick="nextQuestion()" id="nextq">Next</button>
                 </div>
             </div>
         </div>
     </div>
     <form>
-        {% if 'current_form_id' in session %}
         <div class="form-group row">
             <label for="form-title" class="col-sm-2 col-form-label">Pick a title</label>
             <div class="col-sm-10">
-              <input type="text" class="form-control" id="form-title" name="form-title" value="{{ session['form_title'] }}">
+              <input type="text" class="form-control" id="form-title" name="form-title" value="{{ form_title }}" readonly>
             </div>    
         </div>
         <div class="step2" id="step2">
-            <div class="row" data-toggle="modal" data-target="#exampleModal" onclick='resetModal()'>
-                <div class="col-1">
-                    <h5>+</h5>
-                </div>
-                <div class="col">
-                    <h5>Add a question</h5>
-                </div>
-            </div>
             <div class="questions" id="questions">
                 {% for question in questions %}
                 <div class="row" id="q-{{ loop.index}}">
@@ -58,28 +46,17 @@
                         <h5 class="text-justify">{{ question.text }}</h5>
                     </div>
                     <div class="col-2 p-0 p-md-3 col-md-1">
-                        <img src="{{ url_for('static', filename='assets/icons/star-grey.png') }}" alt="star-grey" id="not-fav" onclick="makeFav(this)">
-                        <i class="fas fa-trash trash" onclick="deleteQuestion('{{question._id}}')"></i>
                     </div>
                 </div>
                 {% endfor %}
             </div>
             <div class="bottom">
                 <div class="buttons" id="buttons">
-                    <div class="btn-snd">Delete a question</div>
-                    <div class="btn-prm" onclick="congrats()">Next</div>
+                    <div class="btn-green" onclick="modifyForm('{{session['current_form_id']}}')"><span>Modify the form</span></div>
+                    <div class="btn-prm" onclick="window.location.href = '/survey/{{session['current_form_id']}}'"><span>See survey</span></div>
                 </div>
             </div>
         </div>
-        {% else %}
-        <div class="form-group row">
-            <label for="form-title" class="col-sm-2 col-form-label">Pick a title</label>
-            <div class="col-sm-10">
-              <input type="text" class="form-control" id="form-title" name="form-title">
-            </div>    
-        </div>
-        <div class="btn-prm" onclick="submitForm()">Next</div>
-        {% endif %}
     </form>
 </div>
 

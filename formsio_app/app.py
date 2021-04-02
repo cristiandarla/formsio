@@ -47,9 +47,9 @@ def no_login_required(f):
 # Routes
 from .data_models.user import routes as user_routes
 from .data_models.team import routes as team_routes
-#from .data_models.answer import routes as answer_routes
 from .data_models.form import routes as form_routes
-#from .data_models.question import routes as question_routes
+from .data_models.question import routes as question_routes
+from .data_models.survey import routes as survey_routes
 
 @app.route('/')
 def home():

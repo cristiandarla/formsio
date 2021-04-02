@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{%block content%}
+<div class="wrapper-profile">
+    <form id="survey">
+        <input type="text" id="_id" name="_id" value="" hidden>
+        <h4 id="question"></h4>
+        <div class="scrollable-div answers" id="answers">
+        </div>
+        <div class="btn-prm" id="survey-next" onclick="storeCurrent()"><span>Next</span></div>
+        <div class="btn-green" id="survey-final" onclick="finishForm()"><span>Finish</span></div>
+    </form>
+</div>
+{%endblock%}

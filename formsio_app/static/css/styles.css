@@ -13,16 +13,19 @@
 :root {
     --white: rgb(249, 249, 249);
     --pure-white: rgb(255, 255, 255);
-    --light-cyan: rgba(90, 210, 218, 0.75);
-    --dark-cyan: rgb(90, 210, 218);
-    --dark-cyan-alpha: rgba(90, 210, 218, 0.75);
     --light-grey: rgb(229, 229, 229);
-    --light-grey-alpha: rgba(229, 229, 229, 0.75);
+    
+    --cyan: rgb(90, 210, 218);
     --grey: rgb(84, 84, 84);
     --black: rgb(11, 11, 11);
-    --alpha-black: rgba(11, 11, 11, 0.6);
     --light-red: rgb(218, 98, 90);
+    --green : rgb(90, 218, 126);
+
+    --cyan-alpha: rgba(90, 210, 218, 0.75);
+    --light-grey-alpha: rgba(229, 229, 229, 0.75);
+    --alpha-black: rgba(11, 11, 11, 0.6);
     --light-red-alpha: rgba(218, 98, 90, 0.75);
+    --green-alpha : rgba(90, 218, 126, 0.75);
 }
 
 .loginCard {
@@ -34,7 +37,7 @@
 }
 
 .loginCard .btn {
-    background: var(--dark-cyan) !important;
+    background: var(--cyan) !important;
     color: var(--black);
     border: none;
     border-radius: 25px;
@@ -84,7 +87,7 @@
     margin: 10vh auto 10vh auto;
 }
 .wrapper-profile .btn {
-    background: var(--dark-cyan) !important;
+    background: var(--cyan) !important;
     color: var(--black);
     border: none;
     border-radius: 25px;
@@ -95,7 +98,7 @@
 }
 
 .wrapper-home {
-    background: var(--light-cyan);
+    background: var(--cyan-alpha);
     min-height: 200vh;
     display: flex;
     flex-direction: column;
@@ -163,7 +166,7 @@
     border-radius: 50%;
     width: 25em;
     height: 25em;
-    background: var(--dark-cyan);
+    background: var(--cyan);
     border: 0px solid var(--black);
 }
 
@@ -174,7 +177,7 @@
     border-radius: 50%;
     width: 15em;
     height: 15em;
-    background: var(--dark-cyan);
+    background: var(--cyan);
     border: 0px solid var(--black);
 }
 
@@ -209,33 +212,33 @@
 }
 
 .button-neon {
-    background: var(--dark-cyan) !important;
+    background: var(--cyan) !important;
     color: var(--alpha-black);
     border: none;
     border-radius: 25px;
     margin: 5vh auto 1vh auto;
     width: 50vw;
     height: 8vh;
-    box-shadow: 0 0 20px var(--light-cyan);
+    box-shadow: 0 0 20px var(--cyan-alpha);
     transition: all 0.2s ease-in-out;
 }
 .button-neon:hover {
     color: var(--black);
-    box-shadow: 0 0 50px var(--light-cyan);
+    box-shadow: 0 0 50px var(--cyan-alpha);
 }
 
 @-webkit-keyframes text-glow {
     from {
         text-shadow: 0 0 10px var(--white), 0 0 20px var(--white),
-            0 0 30px var(--light-cyan), 0 0 40px var(--light-cyan),
-            0 0 50px var(--light-cyan), 0 0 60px var(--light-cyan),
-            0 0 70px var(--light-cyan);
+            0 0 30px var(--cyan-alpha), 0 0 40px var(--cyan-alpha),
+            0 0 50px var(--cyan-alpha), 0 0 60px var(--cyan-alpha),
+            0 0 70px var(--cyan-alpha);
     }
     to {
-        text-shadow: 0 0 20px var(--white), 0 0 30px var(--dark-cyan),
-            0 0 40px var(--dark-cyan), 0 0 50px var(--dark-cyan),
-            0 0 60px var(--dark-cyan), 0 0 70px var(--dark-cyan),
-            0 0 80px var(--dark-cyan);
+        text-shadow: 0 0 20px var(--white), 0 0 30px var(--cyan),
+            0 0 40px var(--cyan), 0 0 50px var(--cyan),
+            0 0 60px var(--cyan), 0 0 70px var(--cyan),
+            0 0 80px var(--cyan);
     }
 }
 
@@ -243,9 +246,10 @@
     text-indent: 100%;
     white-space: nowrap;
     overflow: hidden;
+    display: none;
 }
 
-.btn-prm, .btn-snd, .btn-ans{
+.btn-prm, .btn-snd, .btn-ans, .btn-green{
     color: var(--black);
     border: none;
     border-radius: 25px;
@@ -256,16 +260,22 @@
 }
 
 .btn-prm{
-    background: var(--dark-cyan) !important;
+    background: var(--cyan) !important;
 }
 .btn-prm:hover{
-    background: var(--dark-cyan-alpha) !important;
+    background: var(--cyan-alpha) !important;
 }
 .btn-snd{
     background: var(--light-red) !important;
 }
 .btn-snd:hover{
     background: var(--light-red-alpha) !important;
+}
+.btn-green{
+    background: var(--green) !important;
+}
+.btn-green:hover{
+    background: var(--green-alpha) !important;
 }
 .btn-ans{
     align-items: center!important;
@@ -292,7 +302,7 @@ textarea {
 }
 .question, .question:focus{
     border-radius: 25px;
-    background-color: var(--dark-cyan);
+    background-color: var(--cyan);
 }
 
 #share img{
@@ -304,6 +314,8 @@ textarea {
 .ind-ans{
     border: 2px solid var(--light-grey);
     border-radius: 25px;
+    display: flex;
+    align-items: center;
 }
 
 .answer-input{
@@ -320,7 +332,7 @@ textarea {
 
 .pill-cyan{
     display: none;
-    background-color: var(--dark-cyan);
+    background-color: var(--cyan);
 }
 .pill-grey{
     background-color: var(--grey);
@@ -341,7 +353,7 @@ textarea {
 }
 
 .main-pill-cyan{
-    background-color: var(--dark-cyan);
+    background-color: var(--cyan);
     text-align: center;
 }
 
@@ -350,11 +362,12 @@ textarea {
     height: 16px;
 }
 
-div:is(.btn-snd, .btn-prm){
+div:is(.btn-snd, .btn-prm, .btn-green){
     text-align: center;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
 }
 
 .trash{
@@ -379,11 +392,11 @@ div:is(.btn-snd, .btn-prm){
 }
 
 .custom-shape-divider-bottom-1616019804 .shape-fill {
-    fill: var(--dark-cyan);
+    fill: var(--cyan);
 }
 
 .main-content{
-    background-color: var(--dark-cyan);
+    background-color: var(--cyan);
 }
 
 #form-title{
@@ -396,6 +409,38 @@ div:is(.btn-snd, .btn-prm){
     border-bottom: 2px solid var(--grey);
 }
 
+.list-item-rounded{
+    width: 85vw;
+    margin: 0.5vh;
+    cursor: pointer;
+    border: none;
+    border-radius: 25px;
+    background-color: var(--cyan);
+    display: flex;
+    justify-content: center;
+    height: 8vh;
+    align-items: center;
+    font-weight: bolder;
+}
+.list-item-rounded:hover{
+    background-color: var(--cyan-alpha);
+}
+.list-parent{
+    display: flex;
+    justify-content: center;
+}
+
+.w85{
+    width: 85vw;
+}
+
+.center{
+    height: calc(100vh - 60px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 /* pana aici ^^^ */
 @media (max-width: 1024px) {
     .wrapper-profile {
@@ -421,7 +466,7 @@ div:is(.btn-snd, .btn-prm){
     }
 
     .wrapper-profile .btn {
-        background: var(--dark-cyan) !important;
+        background: var(--cyan) !important;
         color: var(--black);
         border: none;
         border-radius: 25px;
@@ -431,7 +476,7 @@ div:is(.btn-snd, .btn-prm){
     }
 
     .wrapper-home {
-        background: var(--light-cyan);
+        background: var(--cyan-alpha);
         min-height: 200vh;
         display: flex;
         flex-direction: column;
@@ -499,7 +544,7 @@ div:is(.btn-snd, .btn-prm){
         border-radius: 50%;
         width: 18em;
         height: 18em;
-        background: var(--dark-cyan);
+        background: var(--cyan);
         border: 0px solid var(--black);
     }
 
@@ -510,7 +555,7 @@ div:is(.btn-snd, .btn-prm){
         border-radius: 50%;
         width: 10em;
         height: 10em;
-        background: var(--dark-cyan);
+        background: var(--cyan);
         border: 0px solid var(--black);
     }
 

@@ -32,226 +32,158 @@ $(document).ready(function() {
 	checkQType($("select#qtype"), initialAnswer);
 
 	if (!(redirectError === "")){
-		Swal.fire({
-			icon: 'warning',
-			title: redirectError,
-			showConfirmButton: false,
-			timer: 3000
-		}).then(() => $("p#redirect-error").hide());
+		Notiflix.Notify.Warning(redirectError, {clickToClose : true})
 	};
 	$("select#qtype").on("change", function(){
 		checkQType(this, initialAnswer);
 	});
 	$("i.trash").toggle();
+	$('#form-title')
+		.on('focusout', () => {
+			var title = $('#form-title').val()
+			if(title != session["form_title"] && session["form_title"] != null){
+				submitForm();
+			}
+		})
 
 	// make these modualar
     $("form#signup").on('submit', function(e){
-		var $form = $(this);
-		var data = $form.serialize();
-
-		$.ajax({
-		url: "/signup",
-		type: "POST",
-		data: data,
-		dataType: "json",
-		success: function(resp) {
-			successMessage('Your account has been created succesfully'),
-			setTimeout(() => {
-				window.location.href = "/team";
-			}, 1750);
-		},
-		error: function(resp) {
-			errorHandler(resp);
-		}
-		});
-
-		e.preventDefault();
+		sendPOSTReqeust($(this), e, "/signup", true, 'Your account has been created succesfully', true, "/team")
 	});
     $("form#login").on('submit', function(e){
-		var $form = $(this);
-		var data = $form.serialize();
-
-		$.ajax({
-			url: "/login",
-			type: "POST",
-			data: data,
-			dataType: "json",
-			success: function(resp) {
-				window.location.href = "/profile";
-			},
-			error: function(resp) {
-				errorHandler(resp);
-			}
-		});    
-		e.preventDefault();
+		sendPOSTReqeust($(this), e, "/login", false, '', true, "/forms")
 	});
     $("form#team-add").on('submit', function(e){
-		var $form = $(this);
-		var data = $form.serialize();
-
-		$.ajax({
-		url: "/team/add",
-		type: "POST",
-		data: data,
-		dataType: "json",
-		success: function(resp) {
-			successMessage('The team was create successfuly'),
-			setTimeout(() => {
-				window.location.href = "/profile";
-			}, 1750);
-		},
-		error: function(resp) {
-			errorHandler(resp);
-		}
-		});    
-		e.preventDefault();
+		sendPOSTReqeust($(this), e, "/team/add",true, 'The team was create successfuly', true, "/profile")
 	});
 	$("form#team-join").on('submit', function(e){
-		var form = $("input[name=team]:checked");
-		var data = form.serialize();
-
-		$.ajax({
-		url: "/team/join",
-		type: "POST",
-		data: data,
-		dataType: "json",
-		success: function(resp) {
-			successMessage('The new team was selected!'),
-			setTimeout(() => {
-				window.location.href = "/profile";
-			}, 1750);
-		},
-		error: function(resp) {
-			errorHandler(resp);
-		}
-		});
-		e.preventDefault();
+		sendPOSTReqeust($("input[name=team]:checked"), e, "/team/join",true, 'The new team was selected!', true, "/profile")
 	});
 	$("form#phone").on('submit', function(e){
-		var form = $(this);
-		var data = form.serialize();
-
-		$.ajax({
-		url: "/profile/phone",
-		type: "POST",
-		data: data,
-		dataType: "json",
-		success: function(resp) {
-			successMessage('The phone was changed!'),
-			setTimeout(() => {
-				window.location.href = "/profile";
-			}, 1750);
-		},
-		error: function(resp) {
-			errorHandler(resp);
-		}
-		});
-		e.preventDefault();
+		sendPOSTReqeust($(this), e, "/profile/phone",true, 'The phone was changed!', true, "/profile")
 	});
 	$("form#address").on('submit', function(e){
-		var form = $(this);
-		var data = form.serialize();
-
-		$.ajax({
-		url: "/profile/address",
-		type: "POST",
-		data: data,
-		dataType: "json",
-		success: function(resp) {
-			successMessage('The address was changed!'),
-			setTimeout(() => {
-				window.location.href = "/profile";
-			}, 1750);
-		},
-		error: function(resp) {
-			errorHandler(resp);
-		}
-		});
-		e.preventDefault();
+		sendPOSTReqeust($(this), e, "/profile/address",true, 'The address was changed!', true, "/profile")
 	});
 
 	$("div.btn-snd").on("click", function(e){
 		$("i.trash").toggle();
 	})
+
+	if(window.location.pathname === '/survey'){
+		var questions = JSON.parse(sessionStorage.questions)
+		var currentQuestion = questions[sessionStorage.currentQuestion]
+
+		$("input#_id").val(currentQuestion._id)
+
+		if(questions.length > sessionStorage.currentQuestion + 1){
+			$('div#survey-final').hide()
+		}else{
+			$('div#survey-next').hide()
+		}
+		$('h4#question').text(currentQuestion.text)
+		$('div#answers').show()
+		switch(currentQuestion.question_type){
+			case 'text':{
+				var div = document.createElement('div')
+					div.className = 'ind-ans row my-1 w-100'
+					$('div#answers').append(div)
+				var input = document.createElement('input')
+					input.setAttribute('type', 'text')
+					input.setAttribute('name', 'ans')
+					input.setAttribute('id', 'answer')
+					input.className = 'answer-input'
+					div.append(input)
+				break;
+			}
+			case 'checkbox':{
+				currentQuestion.answers.forEach((val ,index) => {
+					var div = document.createElement('div')
+						div.className = 'ind-ans row my-1 w-100'
+						div.id = 'ind-ans-' + (index + 1)
+						$('div#answers').append(div)
+					var input = document.createElement('input')
+						input.setAttribute('type', 'checkbox')
+						input.setAttribute('hidden', true)
+						input.setAttribute('name', 'ans')
+						input.setAttribute('id', 'ans-' + (index + 1))
+						input.className = 'answer-input'
+						div.append(input)
+					var label = document.createElement('label')
+						label.setAttribute('for', 'ans-' + (index + 1))
+						label.innerHTML = val
+						div.append(label)
+				})
+				break;
+			}
+			case 'radio':{
+				currentQuestion.answers.forEach((val ,index) => {
+					var div = document.createElement('div')
+						div.className = 'ind-ans row my-1 w-100'
+						div.id = 'ind-ans-' + (index + 1)
+						$('div#answers').append(div)
+					var input = document.createElement('input')
+						input.setAttribute('type', 'checkbox')
+						input.setAttribute('name', 'ans')
+						input.setAttribute('id', 'ans-' + (index + 1))
+						input.className = 'answer-input'
+						div.append(input)
+					var label = document.createElement('label')
+						label.setAttribute('for', 'ans-' + (index + 1))
+						label.innerHTML = val
+						div.append(label)
+				})
+				break;
+			}
+			case 'file':{
+				var div = document.createElement('div')
+					div.className = 'ind-ans row my-1 w-100'
+					$('div#answers').append(div)
+				currentQuestion.answers.forEach(() => {
+					var input = document.createElement('file')
+						input.setAttribute('type', 'radio')
+						input.setAttribute('name', 'ans')
+						input.setAttribute('id', 'currentQuestion._id')
+						input.className = 'answer-input'
+						div.append(input)
+				})
+				break;
+			}
+		}
+		
+		sessionStorage.currentQuestion = parseInt(sessionStorage.currentQuestion) + 1
+	}
 });
 
-//try to add new notification method
+//utils
 function errorHandler(resp){
 	if([400, 401].includes(resp.status)){
-		Swal.fire({
-			icon: 'error',
-			title: 'Oops...',
-			text: resp.responseJSON.error
-		});
+		Notiflix.Notify.Failure(resp.responseJSON.error, {clickToClose : true})
 	}else if([500, 0].includes(resp.status)){
-		Swal.fire({
-			icon: 'error',
-			title: 'Oops...',
-			text: "Server error! Ask tech support."
-		});
+		Notiflix.Notify.Failure("Server error! Ask tech support.", {clickToClose : true})
 	}else if(resp.status == 503){
-		Swal.fire({
-			icon: 'error',
-			title: 'Oops...',
-			text: "Server error! Request timed out..."
-		});
+		Notiflix.Notify.Failure("Server error! Request timed out...", {clickToClose : true})
 	}else{
-		Swal.fire({
-			icon: 'error',
-			title: 'Oops...',
-			text: "An unknown error has occured... We are sorry for that! Please contact the tech support!"
-		});
+		Notiflix.Notify.Failure("An unknown error has occured... We are sorry for that! Please contact the tech support!", {clickToClose : true})
 	}
 }
 function successMessage(msg){
-	Swal.fire({
-		position: 'top-end',
-		icon: 'success',
-		title: msg,
-		showConfirmButton: false,
-		timer: 1500
-	})
+	Notiflix.Notify.Success(msg, {clickToClose : true})
 }
 function warningMessage(msg){
-	Swal.fire({
-		position: 'top-right',
-		icon: 'warning',
-		title: msg,
-		showConfirmButton: false,
-		timer: 1500
-	})
+	Notiflix.Notify.Warning(msg, {clickToClose : true})
 }
-
-
 function Validate() {
 	var password = document.getElementById("password").value;
 	var confirmPassword = document.getElementById("rpassword").value;
 	var privacy = $("#privacy");
 	if (password != confirmPassword && !privacy.is(":checked")) {
-
-		Swal.fire({
-			icon: 'error',
-			title: 'Oops...',
-			text: 'Passwords do not match!'
-		}).then(() => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'You should accept the Terms!'
-            });
-          })
+		Notiflix.Notify.Warning('Passwords do not match!', {clickToClose : true}),
+		Notiflix.Notify.Warning('You should accept the Terms!', {clickToClose : true})
 	}else if (password != confirmPassword) {
-		Swal.fire({
-			icon: 'error',
-			title: 'Oops...',
-			text: 'Passwords do not match!'
-		});
+		Notiflix.Notify.Warning('Passwords do not match!', {clickToClose : true})
 	}else if (!privacy.is(":checked")) {
-		Swal.fire({
-			icon: 'error',
-			title: 'Oops...',
-            text: 'You should accept the Terms!'
-		});
+		Notiflix.Notify.Warning('You should accept the Terms!', {clickToClose : true})
 	}
 	return password == confirmPassword && privacy.is(":checked");
 }
@@ -271,10 +203,62 @@ function makeJSON(question, qtype, id = null){
 	}
 	return formData;
 }
+function sendPOSTReqeust(form, event, url, hasMessage, message, redirect, destination){
+	event.preventDefault();
+	var data = $(form).serialize();
 
+	$.ajax({
+	url: url,
+	type: "POST",
+	data: data,
+	dataType: "json",
+	success: function(resp) {
+		if(hasMessage){
+			successMessage(message)
+		}
+		if(redirect){
+			setTimeout(() => {
+				window.location.href = destination;
+			}, 1750)
+		}
+	},
+	error: function(resp) {
+		errorHandler(resp);
+	}
+	});
+}
+function checkQType(value, ans){
+	if( ["checkbox", "checkbox_cf", "radio", "radio_cf"].includes($(value).val())){
+		if($("div.ind-ans").length === 0 ){
+			$("div#answers").append(ans);
+		}
+		$("div#btn-ans").show();
+		$("div.scrollable-div").show();
+	}else{
+		$("div#btn-ans").hide();
+		$("div.scrollable-div").hide();
+	}
+	if(["checkbox_cf", "radio_cf"].includes($(value).val())){
+		$("button#nextq").show();
+		$("button#addq").hide();
+	}else{
+		$("button#nextq").hide();
+		$("button#addq").show();
+	}
+}
+function resetModal(){
+	currentQuestion = null;
+	$('input#_id').val('');
+	$('textarea#question').val('');
+	$('select#qtype').val('text');
+	$("div#btn-ans").hide();
+	$('div#answers>').remove();
+}
+
+//questions
 function deleteQuestion(id){
 	$.ajax({
-		url: "/forms/create/delete",
+		url: "/forms/create/question/delete",
 		type: "POST",
 		data: {'id' : id},
 		dataType: "json",
@@ -289,71 +273,88 @@ function deleteQuestion(id){
 		}
 	})
 }
-function modifyQuestion(context){
-	currentQuestion = context;
-	$('input#_id').val(context._id);
-	$('textarea#question').val(context.text);
-	$('select#qtype').val(context.question_type);
-	$('div#answers>').remove();
-	if(['checkbox', 'radio'].includes(context.question_type)){
-		context.answers.forEach(
-			(element, index) => {
-				$("div#btn-ans").show();
-				var div = document.createElement('div')
-				div.id = 'ind-ans-' + (index + 1)
-				div.className = 'ind-ans row my-1 w-100'
-				$('div#answers').append(div)
-	
-				//col-10
-				var col_10 = document.createElement('div')
-				col_10.className = 'col-10'
-				div.appendChild(col_10)
-	
-				var input = document.createElement('input')
-				input.setAttribute('type', 'text')
-				input.setAttribute('name', 'ans[' + (index + 1) + ']')
-				input.setAttribute('value', element)
-				input.className = 'answer-input'
-				col_10.appendChild(input)
-	
-				//col-2
-				var col_2 = document.createElement('div')
-				col_2.className = 'col-2'
-				col_2.id = 'btn-ind-ans'
-				div.appendChild(col_2)
-	
-				var btn1 = document.createElement('div')
-				btn1.className = 'btn-pill pill-cyan'
-				btn1.id = 'pill-cyan'
-				btn1.setAttribute('onclick', 'switchButtons(this)')
-				col_2.appendChild(btn1)
-	
-				var btn2 = document.createElement('div')
-				btn2.className = 'btn-pill pill-grey'
-				btn2.id = 'pill-grey'
-				btn2.setAttribute('onclick', 'switchButtons(this)')
-				col_2.appendChild(btn2)
-	
-				var btn3 = document.createElement('div')
-				btn3.className = 'btn-pill pill-del'
-				btn3.setAttribute('onclick', 'removeCurrentAnswer(this)')
-				btn3.innerHTML = '&mdash;'
-				col_2.appendChild(btn3)
-	
-	
-				
-			}
-		)
-	}
-	$('#exampleModal').modal('toggle');
+function modifyQuestion(id){
+	$.ajax({
+		url: "/question/get",
+		type: "POST",
+		data: {'id' : id},
+		dataType: "json",
+		success: function(resp) {
+			currentQuestion = resp
+		},
+		error: function(resp) {
+			errorHandler(resp);
+		}
+	}).then(() => {
+		$('input#_id').val(currentQuestion._id);
+		$('textarea#question').val(currentQuestion.text);
+		$('select#qtype').val(currentQuestion.question_type);
+		$('div#answers>').remove();
+		if(['checkbox', 'radio'].includes(currentQuestion.question_type)){
+			$("div.scrollable-div").show();
+			currentQuestion.answers.forEach(
+				(element, index) => {
+					$("div#btn-ans").show();
+					var div = document.createElement('div')
+					div.id = 'ind-ans-' + (index + 1)
+					div.className = 'ind-ans row my-1 w-100'
+					$('div#answers').append(div)
+		
+					//col-10
+					var col_10 = document.createElement('div')
+					col_10.className = 'col-10'
+					div.appendChild(col_10)
+		
+					var input = document.createElement('input')
+					input.setAttribute('type', 'text')
+					input.setAttribute('name', 'ans[' + (index + 1) + ']')
+					input.setAttribute('value', element)
+					input.className = 'answer-input'
+					col_10.appendChild(input)
+		
+					//col-2
+					var col_2 = document.createElement('div')
+					col_2.className = 'col-2'
+					col_2.id = 'btn-ind-ans'
+					div.appendChild(col_2)
+		
+					var btn1 = document.createElement('div')
+					btn1.className = 'btn-pill pill-cyan'
+					btn1.id = 'pill-cyan'
+					btn1.setAttribute('onclick', 'switchButtons(this)')
+					col_2.appendChild(btn1)
+		
+					var btn2 = document.createElement('div')
+					btn2.className = 'btn-pill pill-grey'
+					btn2.id = 'pill-grey'
+					btn2.setAttribute('onclick', 'switchButtons(this)')
+					col_2.appendChild(btn2)
+		
+					var btn3 = document.createElement('div')
+					btn3.className = 'btn-pill pill-del'
+					btn3.setAttribute('onclick', 'removeCurrentAnswer(this)')
+					btn3.innerHTML = '&mdash;'
+					col_2.appendChild(btn3)
+				}
+			)
+		}
+		$('#exampleModal').modal('toggle');
+		
+		var regex = '^[0-9a-f]{12}[1-5][0-9a-f]{3}[89ab][0-9a-f]{15}$'
+		if(window.location.pathname.split('/').splice(-1)[0].match(regex)){
+			$('.answer-input').prop('disabled', true),
+			$('.pill-del').hide(), $('.pill-grey').hide(), $('.pill-cyan').hide()
+		}
+	})
 }
 function addQuestion(){
 	var question = $('textarea[name=question').val();
 	var qtype = $('select[name=qtype]').val();
 	var flags = [question === ''];
 	var hasCurrentQuestion = currentQuestion != null;
+	var isModified = false
 	if(hasCurrentQuestion){
-		var isModified = !(question === currentQuestion.text && qtype === currentQuestion.question_type);
+		isModified = !(question === currentQuestion.text && qtype === currentQuestion.question_type);
 	}
 
 	if(["checkbox", "radio"].includes(qtype)){
@@ -378,12 +379,8 @@ function addQuestion(){
 	}
 
 	if(flags.every(element => element == true)){
+		warningMessage('All the input values should be filled!')
 		warningMessage('The question should have a text!')
-		.then(() => {
-			setTimeout(() => {
-				warningMessage('All the input values should be fullfiled!')
-			}, 100);
-		});
 	} else if(flags[0]){
 		warningMessage('The question should have a text!')
 	} else if(flags[1]){
@@ -391,8 +388,9 @@ function addQuestion(){
 	} else { 
 		var formData = makeJSON(question, qtype, hasCurrentQuestion ? currentQuestion._id : null);
 		
+		console.log('ismodifice:', formData)
 		$.ajax({
-			url: isModified ? "/forms/create/update" : "/forms/create/add",
+			url: isModified ? "/forms/create/question/update" : "/forms/create/question/add",
 			type: "POST",
 			data: formData,
 			dataType: "json",
@@ -403,6 +401,7 @@ function addQuestion(){
 				}, 1750);
 			},
 			error: function(resp) {
+				console.log(resp)
 				errorHandler(resp);
 			}
 			});
@@ -410,6 +409,13 @@ function addQuestion(){
 }
 function nextQuestion(){
 	console.log("merge");
+}
+function makeFav(current){
+	var currentSrc = current.src.split('/');
+	startType = currentSrc[currentSrc.length - 1];
+	var otherType = startType == 'star-grey.png' ? 'star-yellow.png' : 'star-grey.png';
+	currentSrc[currentSrc.length - 1] = otherType;
+	current.src = currentSrc.join('/');
 }
 
 //add questions popup
@@ -431,11 +437,7 @@ function removeCurrentAnswer(current){
 	if($("div.ind-ans").length > 2){
 		parentSelect.remove();
 	}else{
-		Swal.fire({
-			icon: 'error',
-			title: 'Oops...',
-			text: 'You should have at least 2 options!'
-		});
+		Notiflix.Notify.Warning('You should have at least 2 options!', {clickToClose : true})
 	}
 }
 function addNewAnswer(){
@@ -454,43 +456,7 @@ function addNewAnswer(){
 	$("div#answers").append(newAnswer)
 }
 
-function checkQType(value, ans){
-	if( ["checkbox", "checkbox_cf", "radio", "radio_cf"].includes($(value).val())){
-		$("div#btn-ans").show();
-		$("div.scrollable-div").show();
-		if($("div.ind-ans").length === 0 ){
-			$("div#answers").append(ans);
-		}
-	}else{
-		$("div#btn-ans").hide();
-		$("div.scrollable-div").hide();
-	}
-	if(["checkbox_cf", "radio_cf"].includes($(value).val())){
-		$("button#nextq").show();
-		$("button#addq").hide();
-	}else{
-		$("button#nextq").hide();
-		$("button#addq").show();
-	}
-}
-
-function makeFav(current){
-	var currentSrc = current.src.split('/');
-	startType = currentSrc[currentSrc.length - 1];
-	var otherType = startType == 'star-grey.png' ? 'star-yellow.png' : 'star-grey.png';
-	currentSrc[currentSrc.length - 1] = otherType;
-	current.src = currentSrc.join('/');
-}
-
-function resetModal(){
-	currentQuestion = null;
-	$('input#_id').val('');
-	$('textarea#question').val('');
-	$('select#qtype').val('text');
-	$("div#btn-ans").hide();
-	$('div#answers>').remove();
-}
-
+//form
 function submitForm(){
 	var title = $('#form-title').val();
 	if( title == ""){
@@ -502,9 +468,9 @@ function submitForm(){
 			data: {'title' : title },
 			dataType: "json",
 			success: function(resp) {
-				successMessage('The form has been created succesfully!'),
+				successMessage(resp['success']),
 				setTimeout(() => {
-					window.location.href = "/forms/submit";
+					window.location.href = "/forms/create/question/add";
 				}, 1750);
 			},
 			error: function(resp) {
@@ -512,4 +478,31 @@ function submitForm(){
 			}
 		});
 	}
+}
+function modifyForm(id){
+	console.log(id)
+	/*$.ajax({
+		url: "/survey/" + id,
+		type: "POST",
+		dataType: "json",
+		success: function(resp) {
+		},
+		error: function(resp) {
+			errorHandler(resp);
+		}
+	});*/
+}
+function congrats(){
+	successMessage('All changes has been saved!'),
+	setTimeout(() => {
+		window.location.href = "/forms/submit";
+	}, 1750);
+}
+
+//survey
+function storeCurrent(){
+	console.log('merge')
+}
+function finishForm(){
+	console.log('merge')
 }
