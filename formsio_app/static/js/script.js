@@ -1,4 +1,5 @@
 $(document).ready(function() {
+
 	var currentQuestion = null;
 	var redirectError = $("p#redirect-error").text()
 	let initialAnswer = `
@@ -22,7 +23,6 @@ $(document).ready(function() {
 			<div class="btn-pill pill-del" onclick="removeCurrentAnswer(this)">&mdash;</div>
 		</div>
 	</div>`;
-
 	//init
 	var questions = $('div.questions > div.row').length;
 	for (var i = 1; i <= length; i++){
@@ -71,12 +71,21 @@ $(document).ready(function() {
 	})
 
 	if(window.location.pathname === '/survey'){
+		/*window.onbeforeunload = function(){
+			console.log('reload')
+			if(parseInt(sessionStorage.currentQuestion) > 0){
+				sessionStorage.currentQuestion = parseInt(sessionStorage.currentQuestion) - 1
+			}else{
+				sessionStorage.currentQuestion = 0
+			}
+		}*/
 		var questions = JSON.parse(sessionStorage.questions)
 		var currentQuestion = questions[sessionStorage.currentQuestion]
+		sessionStorage.currentQuestion = parseInt(sessionStorage.currentQuestion) + 1
 
-		$("input#_id").val(currentQuestion._id)
-
-		if(questions.length > sessionStorage.currentQuestion + 1){
+		$("input#question-id").val(currentQuestion._id)
+		$('input#qtype-survey').val(currentQuestion.question_type)
+		if(questions.length > sessionStorage.currentQuestion){
 			$('div#survey-final').hide()
 		}else{
 			$('div#survey-next').hide()
@@ -117,13 +126,15 @@ $(document).ready(function() {
 				break;
 			}
 			case 'radio':{
+				$('div#answers').append(div)
 				currentQuestion.answers.forEach((val ,index) => {
 					var div = document.createElement('div')
 						div.className = 'ind-ans row my-1 w-100'
 						div.id = 'ind-ans-' + (index + 1)
 						$('div#answers').append(div)
 					var input = document.createElement('input')
-						input.setAttribute('type', 'checkbox')
+						input.setAttribute('type', 'radio')
+						input.setAttribute('hidden', true)
 						input.setAttribute('name', 'ans')
 						input.setAttribute('id', 'ans-' + (index + 1))
 						input.className = 'answer-input'
@@ -150,8 +161,6 @@ $(document).ready(function() {
 				break;
 			}
 		}
-		
-		sessionStorage.currentQuestion = parseInt(sessionStorage.currentQuestion) + 1
 	}
 });
 
@@ -480,17 +489,9 @@ function submitForm(){
 	}
 }
 function modifyForm(id){
-	console.log(id)
-	/*$.ajax({
-		url: "/survey/" + id,
-		type: "POST",
-		dataType: "json",
-		success: function(resp) {
-		},
-		error: function(resp) {
-			errorHandler(resp);
-		}
-	});*/
+	session['session["form_title"]'] = id
+	session['session["current_form_id"]'] = id
+	window.location.href = '/forms/create/question/add'
 }
 function congrats(){
 	successMessage('All changes has been saved!'),
@@ -500,9 +501,39 @@ function congrats(){
 }
 
 //survey
-function storeCurrent(){
-	console.log('merge')
-}
-function finishForm(){
-	console.log('merge')
+function storeCurrent(isLast){
+	var question_id = $('input#question-id').val()
+	var qtype = $("input#qtype-survey").val()
+	switch(qtype){
+		case 'text':{
+			var inputValue = $('input#answer').val()
+			if(inputValue == ''){
+				Notiflix.Notify.Warning('The answer cannot be empty!', {clickToClose : true})
+			}else{
+				$.ajax({
+					url: '/survey',
+					type: "POST",
+					data: {'question_id': question_id, 'answer' : inputValue},
+					dataType: "json",
+					success: function(resp) {
+						window.location.href= isLast ? '/survey/congrats' : '/survey';
+					},
+					error: function(resp) {
+						errorHandler(resp);
+					}
+
+				})
+			}
+			break
+		}
+		case 'checkbox':{
+			break
+		}
+		case 'radio':{
+			break
+		}
+		case 'file':{
+			break
+		}
+	}
 }

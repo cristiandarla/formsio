@@ -36,10 +36,8 @@ class Question:
 			question['answers'] = request.form.getlist('answers[]')
 		
 		if db.questions.insert_one(question):
-			print('aici')
 			return jsonify(question), 200
 		else:
-			print('ba aici')
 			return jsonify({'error': 'Could not add the question! Try again!'}), 400
 
 	def update_question():
@@ -73,14 +71,14 @@ class Question:
 					if db.questions.update_many(current_id, final):
 						return jsonify({}), 200
 					else:
-						return jsonify({'error' : 'Could not update the question!'})
+						return jsonify({'error' : 'Could not update the question!'}), 400
 				else:
-					return jsonify({'error' : 'Could not update the answers array!'})
+					return jsonify({'error' : 'Could not update the answers array!'}), 400
 			else:
 				if db.questions.update_many(current_id, final):
 					return jsonify({}), 200
 				else:
-					return jsonify({'error' : 'Could not update the question!'})
+					return jsonify({'error' : 'Could not update the question!'}), 400
 
 		else:
 			return jsonify({'error' : 'Could not find this question!'}), 400

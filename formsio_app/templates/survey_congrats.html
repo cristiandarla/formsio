@@ -13,11 +13,10 @@
 <div class="main-content">
     <div class="congrats">
         <h2>Congratulations!</h2>
-        <h5>Thank you for publishing the survey!</h5>
-        <div class="link btn-green" onclick="window.location.href='/survey/{{session['current_form_id']}}'"></div>
+        <h5>Thank you for taking part to this survey. </h5>
     </div>
     <div class="social">
-        <h5>Share your survey to the public!</h5>
+        <h5>Invite your friends to do this form!</h5>
         <div class="share" id="share">
             <img src="{{ url_for('static', filename='assets/icons/gmail.png') }}" alt="gmail">
             <img src="{{ url_for('static', filename='assets/icons/facebook.png') }}" alt="facebook">

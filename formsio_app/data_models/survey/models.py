@@ -11,3 +11,11 @@ class Survey:
             del value['isDeleted']
             final.append(value)
         return final
+
+    def save_question():
+        data = request.form.to_dict()
+        data['_id'] = uuid.uuid4().hex
+        if db.surveys.insert_one(data):
+            return jsonify({}), 200
+        else:
+            return jsonify({'error' : 'Could not access the server!'}), 400

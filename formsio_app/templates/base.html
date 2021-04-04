@@ -21,7 +21,7 @@
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-TileImage" content="{{ url_for('static', filename='assets/favicon/ms-icon-144x144.png') }}">
     <meta name="theme-color" content="#ffffff">
-    <title>formsio</title>
+    <title>formsio - {% block title %}{% endblock %}</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/notiflix-2.7.0.min.css') }}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">

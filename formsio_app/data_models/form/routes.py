@@ -14,8 +14,8 @@ def individiual_form(guid):
   for value in db.questions.find({'form_id':guid}):
     del value['isDeleted']
     questions.append(value)
-  form_title = db.forms.find_one({'_id' : guid})['title']
-  return render_template('form_individual.html', questions = questions, form_title = form_title), 200
+  session['form_title'] = db.forms.find_one({'_id' : guid})['title']
+  return render_template('form_individual.html', questions = questions), 200
 
 @app.route('/forms/all', methods=['GET'])
 @login_required
