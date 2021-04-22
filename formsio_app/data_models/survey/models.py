@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, session, redirect
 from formsio_app.app import db
-import uuid, os
+import uuid, os, json
 
 class Survey:
 
@@ -14,6 +14,7 @@ class Survey:
 
     def save_question():
         data = request.form.to_dict()
+        data['answers'] = json.loads(data['answers'])
         data['_id'] = uuid.uuid4().hex
         if db.surveys.insert_one(data):
             return jsonify({}), 200

@@ -70,6 +70,23 @@ $(document).ready(function() {
 		$("i.trash").toggle();
 	})
 
+	$('#survey-btn').on('click', function(e){
+		$.ajax({
+			url: '/survey/' + session.current_form_id,
+			type: "POST",
+			dataType: "json",
+			success: function(resp) {
+				sessionStorage.questions = JSON.stringify(resp.questions)
+				sessionStorage.currentQuestion = 0
+				sessionStorage.isStarted = 'true'
+				window.location.href = '/survey'
+			},
+			error: function(resp) {
+				errorHandler(resp);
+			}
+		});
+	})
+
 	if(window.location.pathname === '/survey'){
 		/*window.onbeforeunload = function(){
 			console.log('reload')
@@ -79,88 +96,17 @@ $(document).ready(function() {
 				sessionStorage.currentQuestion = 0
 			}
 		}*/
-		var questions = JSON.parse(sessionStorage.questions)
-		var currentQuestion = questions[sessionStorage.currentQuestion]
-		sessionStorage.currentQuestion = parseInt(sessionStorage.currentQuestion) + 1
-
-		$("input#question-id").val(currentQuestion._id)
-		$('input#qtype-survey').val(currentQuestion.question_type)
-		if(questions.length > sessionStorage.currentQuestion){
-			$('div#survey-final').hide()
-		}else{
-			$('div#survey-next').hide()
+		if(sessionStorage.getItem('isStarted') == null){
+			sessionStorage.currentQuestion = 0
+			sessionStorage.isStarted = 'true'
+			sessionStorage.answers = JSON.stringify([])
 		}
-		$('h4#question').text(currentQuestion.text)
-		$('div#answers').show()
-		switch(currentQuestion.question_type){
-			case 'text':{
-				var div = document.createElement('div')
-					div.className = 'ind-ans row my-1 w-100'
-					$('div#answers').append(div)
-				var input = document.createElement('input')
-					input.setAttribute('type', 'text')
-					input.setAttribute('name', 'ans')
-					input.setAttribute('id', 'answer')
-					input.className = 'answer-input'
-					div.append(input)
-				break;
-			}
-			case 'checkbox':{
-				currentQuestion.answers.forEach((val ,index) => {
-					var div = document.createElement('div')
-						div.className = 'ind-ans row my-1 w-100'
-						div.id = 'ind-ans-' + (index + 1)
-						$('div#answers').append(div)
-					var input = document.createElement('input')
-						input.setAttribute('type', 'checkbox')
-						input.setAttribute('hidden', true)
-						input.setAttribute('name', 'ans')
-						input.setAttribute('id', 'ans-' + (index + 1))
-						input.className = 'answer-input'
-						div.append(input)
-					var label = document.createElement('label')
-						label.setAttribute('for', 'ans-' + (index + 1))
-						label.innerHTML = val
-						div.append(label)
-				})
-				break;
-			}
-			case 'radio':{
-				$('div#answers').append(div)
-				currentQuestion.answers.forEach((val ,index) => {
-					var div = document.createElement('div')
-						div.className = 'ind-ans row my-1 w-100'
-						div.id = 'ind-ans-' + (index + 1)
-						$('div#answers').append(div)
-					var input = document.createElement('input')
-						input.setAttribute('type', 'radio')
-						input.setAttribute('hidden', true)
-						input.setAttribute('name', 'ans')
-						input.setAttribute('id', 'ans-' + (index + 1))
-						input.className = 'answer-input'
-						div.append(input)
-					var label = document.createElement('label')
-						label.setAttribute('for', 'ans-' + (index + 1))
-						label.innerHTML = val
-						div.append(label)
-				})
-				break;
-			}
-			case 'file':{
-				var div = document.createElement('div')
-					div.className = 'ind-ans row my-1 w-100'
-					$('div#answers').append(div)
-				currentQuestion.answers.forEach(() => {
-					var input = document.createElement('file')
-						input.setAttribute('type', 'radio')
-						input.setAttribute('name', 'ans')
-						input.setAttribute('id', 'currentQuestion._id')
-						input.className = 'answer-input'
-						div.append(input)
-				})
-				break;
-			}
-		}
+		createQuestionSurvey()
+		$(window).on('unload', function(e){
+			e.preventDefault()
+			sessionStorage.removeItem('isStarted')
+			sessionStorage.removeItem('answers')
+		})
 	}
 });
 
@@ -168,6 +114,7 @@ $(document).ready(function() {
 function errorHandler(resp){
 	if([400, 401].includes(resp.status)){
 		Notiflix.Notify.Failure(resp.responseJSON.error, {clickToClose : true})
+		console.error(resp.responseJSON.error)
 	}else if([500, 0].includes(resp.status)){
 		Notiflix.Notify.Failure("Server error! Ask tech support.", {clickToClose : true})
 	}else if(resp.status == 503){
@@ -262,6 +209,89 @@ function resetModal(){
 	$('select#qtype').val('text');
 	$("div#btn-ans").hide();
 	$('div#answers>').remove();
+}
+function createQuestionSurvey(){
+
+	//cleanup first
+	$('#answers').children().remove()
+	
+	var questions = JSON.parse(sessionStorage.questions)
+	var currentQuestion = questions[sessionStorage.currentQuestion]
+	sessionStorage.currentQuestion = parseInt(sessionStorage.currentQuestion) + 1
+	$("input#question-id").val(currentQuestion._id)
+	//$('input#qtype-survey').val(currentQuestion.question_type)
+	var qtypeInput = document.createElement('input')
+		qtypeInput.setAttribute('type', 'hidden')
+		qtypeInput.setAttribute('name', 'qtype')
+		qtypeInput.setAttribute('id', 'qtype-survey')
+		qtypeInput.setAttribute('value', currentQuestion.question_type)
+	$('div#answers').append(qtypeInput)
+	if(questions.length > sessionStorage.currentQuestion){
+		$('div#survey-final').hide()
+		$('div#survey-next').show()
+	}else{
+		$('div#survey-next').hide()
+		$('div#survey-final').show()
+	}
+	$('h4#question').text(currentQuestion.text)
+	$('div#answers').show()
+	switch(currentQuestion.question_type){
+		case 'text':{
+			var div = document.createElement('div')
+				div.className = 'ind-ans row my-1 w-100'
+				$('div#answers').append(div)
+			var input = document.createElement('input')
+				input.setAttribute('type', 'text')
+				input.setAttribute('name', 'ans')
+				input.setAttribute('id', 'answer')
+				input.className = 'answer-input'
+				div.append(input)
+			break;
+		}
+		case 'checkbox':{
+			currentQuestion.answers.forEach((val ,index) => {
+				makeAnswerElement(val, index, "checkbox")
+			})
+			break;
+		}
+		case 'radio':{
+			currentQuestion.answers.forEach((val ,index) => {
+				makeAnswerElement(val, index, "radio")
+			})
+			break;
+		}
+		case 'file':{
+			var div = document.createElement('div')
+				div.className = 'ind-ans row my-1 w-100'
+				$('div#answers').append(div)
+			currentQuestion.answers.forEach(() => {
+				var input = document.createElement('file')
+					input.setAttribute('type', 'radio')
+					input.setAttribute('name', 'ans')
+					input.setAttribute('id', 'currentQuestion._id')
+					input.className = 'answer-input'
+					div.append(input)
+			})
+			break;
+		}
+	}
+}
+function makeAnswerElement(val, index, qtype){
+	var div = document.createElement('div')
+	div.className = 'ind-ans row my-1 w-100'
+	div.id = 'ind-ans-' + (index + 1)
+	$('div#answers').append(div)
+	var input = document.createElement('input')
+		input.setAttribute('type', qtype)
+		//input.setAttribute('hidden', true)
+		input.setAttribute('name', 'ans')
+		input.setAttribute('id', val._id)
+		input.className = 'answer-input'
+		div.append(input)
+	var label = document.createElement('label')
+		label.setAttribute('for', val._id)
+		label.innerHTML = val.answer
+		div.append(label)
 }
 
 //questions
@@ -504,36 +534,86 @@ function congrats(){
 function storeCurrent(isLast){
 	var question_id = $('input#question-id').val()
 	var qtype = $("input#qtype-survey").val()
+	var answer = {'question_id': question_id, 'question_type': qtype}
+	var answers = sessionStorage.getItem('answers') === null ? [] : JSON.parse(sessionStorage.answers) 
+	var inputValue = null
 	switch(qtype){
 		case 'text':{
-			var inputValue = $('input#answer').val()
+			inputValue = $('input#answer').val()
 			if(inputValue == ''){
 				Notiflix.Notify.Warning('The answer cannot be empty!', {clickToClose : true})
 			}else{
-				$.ajax({
-					url: '/survey',
-					type: "POST",
-					data: {'question_id': question_id, 'answer' : inputValue},
-					dataType: "json",
-					success: function(resp) {
-						window.location.href= isLast ? '/survey/congrats' : '/survey';
-					},
-					error: function(resp) {
-						errorHandler(resp);
-					}
-
-				})
+				answer['answer'] = inputValue
+				answers.push(answer)
+				sessionStorage.answers = JSON.stringify(answers)
+				isLast ? sendSurvey() : createQuestionSurvey()
+			}
+			break
+		}
+		case 'file':{
+			inputValue = $('input#answer').val()
+			if(inputValue == ''){
+				Notiflix.Notify.Warning('The answer cannot be empty!', {clickToClose : true})
+			}else{
+				answer['answer'] = inputValue
+				answers.push(answer)
+				sessionStorage.answers = JSON.stringify(answers)
+				isLast ? sendSurvey() : createQuestionSurvey()
 			}
 			break
 		}
 		case 'checkbox':{
+			inputValue = []
+			var isChecked = false
+			$('#answers div input').each((index, elem) => {
+				if(elem.checked){
+					isChecked = true
+				}
+				inputValue.push({'answer_id' : elem.id , 'isSelected' : elem.checked })
+			})
+			if(inputValue == [] || !isChecked){
+				Notiflix.Notify.Warning('The answer cannot be empty!', {clickToClose : true})
+				return
+			}else{
+				answer['answer'] = inputValue
+				answers.push(answer)
+				sessionStorage.answers = JSON.stringify(answers)
+				isLast ? sendSurvey() : createQuestionSurvey()
+			}
 			break
 		}
 		case 'radio':{
-			break
-		}
-		case 'file':{
+			inputValue = $('input#answer').val()
+			if(inputValue == ''){
+				Notiflix.Notify.Warning('The answer cannot be empty!', {clickToClose : true})
+			}else{
+				answer['answer'] = inputValue
+				answers.push(answer)
+				sessionStorage.answers = JSON.stringify(answers)
+				isLast ? sendSurvey() : createQuestionSurvey()
+			}
 			break
 		}
 	}
+}
+
+function sendSurvey(){
+	data = {
+		'form_id' : session.current_form_id,
+		'answers' : sessionStorage.answers
+	}
+	console.log(data)
+	$.ajax({
+		url: '/survey',
+		type: "POST",
+		data: data,
+		dataType: "json",
+		success: function(resp) {
+			window.location.href= '/survey/congrats';
+		},
+		error: function(resp) {
+			errorHandler(resp);
+		}
+
+	})
 }

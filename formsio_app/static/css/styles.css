@@ -10,6 +10,10 @@
     display: none;
 }
 
+html{
+    overflow-x: hidden;
+}
+
 :root {
     --white: rgb(249, 249, 249);
     --pure-white: rgb(255, 255, 255);
@@ -428,10 +432,6 @@ div:is(.btn-snd, .btn-prm, .btn-green){
 .list-parent{
     display: flex;
     justify-content: center;
-}
-
-.w85{
-    width: 85vw;
 }
 
 .center{

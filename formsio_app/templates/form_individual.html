@@ -54,7 +54,9 @@
             <div class="bottom">
                 <div class="buttons" id="buttons">
                     <div class="btn-green" onclick="modifyForm('{{session['current_form_id']}}')"><span>Modify the form</span></div>
-                    <div class="btn-prm" onclick="window.location.href = '/survey/{{session['current_form_id']}}'"><span>See survey</span></div>
+                    {% if questions|length > 0 %}
+                    <div class="btn-prm" id="survey-btn"><span>See survey</span></div>
+                    {% endif %}
                 </div>
             </div>
         </div>

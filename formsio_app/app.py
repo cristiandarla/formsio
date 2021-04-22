@@ -55,6 +55,10 @@ from .data_models.survey import routes as survey_routes
 def home():
   return render_template('home.html')
 
+@app.route('/service-worker.js')
+def service_worker():
+  return app.send_static_file('service-worker.js')
+
 @app.errorhandler(403)
 def page_not_found(e):
     return render_template('error.html', code = 403, error = 'FORBIDDEN'), 403

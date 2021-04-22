@@ -10,15 +10,19 @@
     </div>
     {% else %}
     <h2>Your forms:</h2>
-    {% for form in forms %}
-    <div class="list-parent" id="{{ form.title }}">
-        <div class="list-item-rounded" id="{{form._id}}" onclick="window.location.href=`{{ url_for('individiual_form', guid = form._id) }}`">
-            {{ form.title }}
+    <div class="forms-scrollable">
+        {% for form in forms %}
+        <div class="list-parent" id="{{ form.title }}">
+            <div class="list-item-rounded" id="{{form._id}}" onclick="window.location.href=`{{ url_for('individiual_form', guid = form._id) }}`">
+                {{ form.title }}
+            </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-    <div class="btn-green w85"><span>Share a form</span></div>
-    <div class="btn-snd w85"><span>Delete a form</span></div>
+    <div class="buttons">
+        <div class="btn-green w85"><span>Share a form</span></div>
+        <div class="btn-snd w85"><span>Delete a form</span></div>
+    </div>
     {% endif %}
 </div>
 {%endblock%}

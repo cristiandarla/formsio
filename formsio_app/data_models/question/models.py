@@ -16,7 +16,6 @@ class Question:
 			return []
 
 	def add_question():
-		print('aici')
 		if 'current_form_id' in session.keys():
 			form_id = session['current_form_id']
 		else:
@@ -33,7 +32,10 @@ class Question:
 		if not request.form.getlist('answers[]'):
 			pass
 		else:
-			question['answers'] = request.form.getlist('answers[]')
+			answers = []
+			for entry in request.form.getlist('answers[]'):
+				answers.append({'_id' : uuid.uuid4().hex, 'answer' : entry})
+			question['answers'] = answers
 		
 		if db.questions.insert_one(question):
 			return jsonify(question), 200

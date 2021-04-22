@@ -1,8 +1,9 @@
-from flask import Flask, render_template, session
+from flask import Flask, render_template, session, jsonify, request, url_for
+from werkzeug.utils import redirect
 from formsio_app.app import app, login_required, no_login_required
 from .models import Survey
 
-@app.route('/survey', methods=['GET'])
+@app.route('/survey')
 @login_required
 def survey():
   return render_template('survey_take.html'), 200
@@ -10,11 +11,14 @@ def survey():
 @login_required
 def survey_congrats():
   return render_template('survey_congrats.html'), 200
-@app.route('/survey/<guid>', methods=['GET'])
+@app.route('/survey/<guid>', methods=['GET', 'POST'])
 @login_required
 def get_survey_questions(guid):
-  questions = Survey.get_all_questions(guid)
-  return render_template('survey_load.html', questions=questions), 200
+  if request.method == 'GET':
+    return redirect(url_for('survey'))
+  else:
+    questions = Survey.get_all_questions(guid)
+    return jsonify({'questions' : questions}), 200
 @app.route('/survey', methods=['POST'])
 @login_required
 def post_survey_question():

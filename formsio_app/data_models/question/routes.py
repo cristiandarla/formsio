@@ -12,7 +12,6 @@ def add_questions():
 @app.route('/forms/create/question/add', methods=['POST'])
 @login_required
 def add_question():
-  print('aici')
   return Question.add_question()
 @app.route('/forms/create/question/update', methods=['POST'])
 @login_required
