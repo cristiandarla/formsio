@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, url_for
+from flask import render_template, session, url_for, jsonify
 from formsio_app.app import app, login_required, no_login_required, db
 from .models import Form
 
@@ -10,8 +10,12 @@ def forms_base():
 @app.route('/forms/all', methods=['GET'])
 @login_required
 def get_forms():
+  return render_template('form_list.html'), 200
+@app.route('/forms/all', methods=['POST'])
+@login_required
+def get_all_forms():
   forms = Form.get_form()
-  return render_template('form_list.html', forms=forms), 200
+  return jsonify({'forms' : forms}), 200
 @app.route('/forms/create', methods=['GET'])
 @login_required
 def create_form():
@@ -24,6 +28,10 @@ def create_form():
 @login_required
 def congrats_page():
   return render_template('form_create_congrats.html')
+@app.route('/forms/desc', methods=['GET'])
+@login_required
+def get_desc():
+  return Form.get_desc()
 
 @app.route('/forms/<guid>', methods=['GET'])
 @login_required
@@ -42,3 +50,15 @@ def individiual_form(guid):
 @login_required
 def submit_form():
   return Form.submit_form()
+@app.route('/forms/subject', methods=['POST'])
+@login_required
+def change_title():
+  return Form.change_title()
+@app.route('/forms/desc', methods=['POST'])
+@login_required
+def change_desc():
+  return Form.change_desc()
+@app.route('/form/finish', methods=['POST'])
+@login_required
+def finish():
+  return Form.finish_form()

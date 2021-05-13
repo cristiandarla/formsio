@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %} {{ session['form_title'] }} {% endblock %}
 {%block content%}
-<div class="wrapper-profile">
+<div class="wrapper-profile light-cyan">
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -13,8 +13,6 @@
                             <option value="text" selected>text</option>
                             <option value="checkbox">checkbox</option>
                             <option value="radio">radio</option>
-                            <!--<option value="checkbox_cf">checkbox & CF</option>
-                            <option value="radio_cf">radio & CF</option>-->
                             <option value="file">file upload</option>
                         </select>
                         <div class="scrollable-div answers" id="answers">
@@ -27,40 +25,30 @@
             </div>
         </div>
     </div>
-    <form>
-        <div class="form-group row">
-            <label for="form-title" class="col-sm-2 col-form-label">Pick a title</label>
-            <div class="col-sm-10">
-              <input type="text" class="form-control" id="form-title" name="form-title" value="{{ session['form_title'] }}" readonly>
-            </div>    
+    <div class="form-group row">
+        <label for="form-title" class="col-sm-2 col-form-label">Title</label>
+        <div class="col-sm-10">
+          <input type="text" class="form-control" id="form-title" name="form-title" value="{{ session['form_title'] }}" readonly>
+        </div>    
+    </div>
+    <div class="form-group row">
+        <label for="form-desc" class="col-sm-2 col-form-label">Description</label>
+        <div class="col-sm-10">
+          <input type="text" class="form-control" id="form-desc" name="form-desc" readonly>
+        </div>    
+    </div>
+    <div class="step2" id="step2">
+        <div class="questions" id="questions">
         </div>
-        <div class="step2" id="step2">
-            <div class="questions" id="questions">
-                {% for question in questions %}
-                <div class="row" id="q-{{ loop.index}}">
-                    <div class="col-2 col-md-1">
-                        <div class="btn-pill main-pill-cyan text-bold">
-                            {{ loop.index }}
-                        </div>
-                    </div>
-                    <div class="col-8 col-md-10" onclick="modifyQuestion('{{question._id}}')">
-                        <h5 class="text-justify">{{ question.text }}</h5>
-                    </div>
-                    <div class="col-2 p-0 p-md-3 col-md-1">
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            <div class="bottom">
-                <div class="buttons" id="buttons">
-                    <div class="btn-green" onclick="modifyForm('{{session['current_form_id']}}')"><span>Modify the form</span></div>
-                    {% if questions|length > 0 %}
-                    <div class="btn-prm" id="survey-btn"><span>See survey</span></div>
-                    {% endif %}
-                </div>
-            </div>
+    </div>
+    <div class="bottom">
+        <div class="question_buttons" id="individual_buttons">
+            <div class="btn-green" id='modify_button'><span>Modify the form</span></div>
+            {% if questions|length > 0 %}
+            <div class="btn-prm" id="survey-btn"><span>See survey</span></div>
+            {% endif %}
         </div>
-    </form>
+    </div>
 </div>
 
 {%endblock%}

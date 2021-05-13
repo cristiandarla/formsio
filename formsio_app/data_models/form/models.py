@@ -4,6 +4,39 @@ import uuid, os
 
 class Form:
 
+	def finish_form():
+		ids = request.form.getlist('ids[]')
+		for index, element in enumerate(ids):
+			if index < len(ids) - 1:
+				if db.questions.update({'_id' : element}, {'$set' : {'trailing_question' : ids[index + 1], 'position' : index}}):
+					pass
+				else:
+					return jsonify({'error' : 'There was an error on updating the questions!'}), 400
+			else:
+				if db.questions.update({'_id' : element}, {'$set' : {'trailing_question' : None, 'position' : index}}):
+					pass
+				else:
+					return jsonify({'error' : 'There was an error on updating the questions!'}), 400
+		return jsonify({'success': 'Everything went well on updating the questions!'}), 200
+		
+	def change_title():
+		if db.forms.update({'_id' : session['current_form_id']}, {'$set' : {'title' : request.form.get('title')}}):
+			return jsonify({'success' : 'The title has been changed successfully!'}), 200
+		else:
+			return jsonify({'error' : 'Could not update the form title!'}), 400
+	def change_desc():
+		if db.forms.update({'_id' : session['current_form_id']}, {'$set' : {'desc' : request.form.get('desc')}}):
+			return jsonify({'success' : 'The description has been changed successfully!'}), 200
+		else:
+			return jsonify({'error' : 'Could not update the form description!'}), 400
+	def get_desc():
+		current = db.forms.find_one({'_id': session['current_form_id']})
+		if current:
+			return jsonify({'desc' : current['form_description']}), 200
+		else:
+			return jsonify({'error' : 'Could not find the current form!'}), 400
+		
+
 	def get_form():
 		data = db.forms.find({"team_id" : session['user']['team']['_id']})
 		final = []
@@ -17,7 +50,8 @@ class Form:
 		else:
 			session['form_title'] = request.form.get('title')
 			form = {
-				'title' : session['form_title']
+				'title' : session['form_title'],
+				'form_description' : request.form.get('desc')
 			}
 
 			if 'current_form_id' in session.keys():

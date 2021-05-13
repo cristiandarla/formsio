@@ -1,5 +1,6 @@
 from flask import Flask, render_template, session,\
                   redirect, request, url_for, flash
+from flask.json import jsonify
 from dotenv import load_dotenv
 from functools import wraps
 import pymongo
@@ -54,6 +55,17 @@ from .data_models.survey import routes as survey_routes
 @app.route('/')
 def home():
   return render_template('home.html')
+@app.route('/session', methods=['GET', 'POST'])
+def sesiune():
+  sesiune = {}
+  if 'user' in session:
+    sesiune['user'] = session['user']
+  if 'current_form_id' in session:
+    sesiune['current_form_id'] = session['current_form_id']
+  if 'form_title' in session:
+    sesiune['form_title'] = session['form_title']
+
+  return jsonify({'session' : sesiune})
 
 @app.route('/service-worker.js')
 def service_worker():

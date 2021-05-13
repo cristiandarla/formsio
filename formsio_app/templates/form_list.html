@@ -2,27 +2,11 @@
 {% block title %} {{ session['user']['name'] }}'s forms {% endblock %}
 {%block content%}
 <div class="forms" id="forms">
-    {% if forms|length == 0 %}
-    <div class="center">
-        <h1>You have no form created!</h1>
-        <h3>Press the button below to create yout first form!</h3>
-        <div class="btn-prm" onclick="window.location.href=`{{ url_for('create_form')}}`">Create a form</div>
+    <div class="scrollable-div forms-list" id="forms-list">
     </div>
-    {% else %}
-    <h2>Your forms:</h2>
-    <div class="forms-scrollable">
-        {% for form in forms %}
-        <div class="list-parent" id="{{ form.title }}">
-            <div class="list-item-rounded" id="{{form._id}}" onclick="window.location.href=`{{ url_for('individiual_form', guid = form._id) }}`">
-                {{ form.title }}
-            </div>
-        </div>
-        {% endfor %}
+    <div class="buttons forms-buttons">
+        <div class="btn-green" id='share_button'><span>Share a form</span></div>
+        <div class="btn-snd" id='delete_button'><span>Delete a form</span></div>
     </div>
-    <div class="buttons">
-        <div class="btn-green w85"><span>Share a form</span></div>
-        <div class="btn-snd w85"><span>Delete a form</span></div>
-    </div>
-    {% endif %}
 </div>
 {%endblock%}

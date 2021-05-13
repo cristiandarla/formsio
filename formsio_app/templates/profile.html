@@ -19,8 +19,8 @@
               </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Change address</button>
+            <button type="button" class="btn btn-snd" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-prm">Change address</button>
           </div>
         </form>
       </div>
@@ -42,8 +42,8 @@
               <input type="text" class="form-control" id="recipient-name" name="phone" value="{{ session['user'].phone }}">
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-primary">Change phone</button>
+              <button type="button" class="btn btn-snd" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-prm">Change phone</button>
             </div>
           </div>
         </form>
@@ -78,7 +78,7 @@
       </p>
     </div>
 
-    <input type="button" class="btn btn-primary" value="Create a Team" onclick="window.location.href='/team/add'"/>
-    <input type="button" class="btn btn-primary" value="Join a Team" onclick="window.location.href='/team/join'"/>
+    <input type="button" class="btn btn-prm" value="Create a Team" onclick="window.location.href='/team/add'"/>
+    <input type="button" class="btn btn-prm" value="Join a Team" onclick="window.location.href='/team/join'"/>
 </div>
 {%endblock%}

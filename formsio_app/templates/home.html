@@ -3,15 +3,12 @@
 {%block content%}
 
 <div class="wrapper-home">
-
-
-
-
-
-
   
+  {% if session['logged_in'] %}
+  <input type="button" class="btn1 btn-primary" value="Get Started with Formsio" onclick="window.location.href=`{{ url_for('forms_base')}}`"/>
+  {% else %}
   <input type="button" class="btn1 btn-primary" value="Get Started with Formsio" onclick="window.location.href=`{{ url_for('signup_get')}}`"/>
-
+  {% endif %}
   <div class="home-circle_big"></div>
   <div class="home-circle_small"></div>
 

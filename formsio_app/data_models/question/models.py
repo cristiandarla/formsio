@@ -27,14 +27,20 @@ class Question:
 			"text" : request.form.get('text'),
 			"question_type" : request.form.get('type'),
 			"form_id" : form_id,
-			"isDeleted" : False
+			"isDeleted" : False,
+			"isFavourite" : False,
+			"trailing_question" : None
 		}
 		if not request.form.getlist('answers[]'):
-			pass
+			question['answers'] = []
 		else:
 			answers = []
-			for entry in request.form.getlist('answers[]'):
-				answers.append({'_id' : uuid.uuid4().hex, 'answer' : entry})
+			for index, entry in enumerate(request.form.getlist('answers[]'), start=1):
+				answer = {}
+				answer['text'] = entry
+				answer['ordinal_pos'] = index
+				answer['trailing_question'] = None
+				answers.append(answer)
 			question['answers'] = answers
 		
 		if db.questions.insert_one(question):
@@ -71,14 +77,14 @@ class Question:
 			if current_has_answers:
 				if db.questions.update_many(current_id, remove_old):
 					if db.questions.update_many(current_id, final):
-						return jsonify({}), 200
+						return jsonify(db.questions.find_one(current_id)), 200
 					else:
 						return jsonify({'error' : 'Could not update the question!'}), 400
 				else:
 					return jsonify({'error' : 'Could not update the answers array!'}), 400
 			else:
 				if db.questions.update_many(current_id, final):
-					return jsonify({}), 200
+					return jsonify(db.questions.find_one(current_id)), 200
 				else:
 					return jsonify({'error' : 'Could not update the question!'}), 400
 
@@ -92,8 +98,9 @@ class Question:
 			return jsonify({'error' : 'Could not delete the question!'}), 400
 
 	def fav_question():
-		if db.questions.update({'_id' : request.form.get('id')}, {'$set' : {'fav' : True}}):
-			return jsonify({}), 200
+		quest = db.questions.find_one({'_id' : request.form.get('id')})
+		if db.questions.update({'_id' : request.form.get('id')}, {'$set' : {'isFavourite' : not quest['isFavourite']}}):
+			return jsonify(db.questions.find_one(request.form.get('id'))), 200
 		else:
 			return jsonify({'error' : 'Could not delete the question!'}), 400
 

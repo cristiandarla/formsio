@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, session, redirect
 from passlib.hash import pbkdf2_sha256
 from formsio_app.app import db
-import uuid, os
+import uuid, datetime
 from random import choice, shuffle
 
 icons = ['profile1.jpg', 'profile2.jpg', 'profile3.jpg','profile4.jpg', 'profile5.jpg', 'profile6.jpg']
@@ -15,18 +15,22 @@ class User:
     return jsonify(user), 200
 
   def signup(self):
-
     # Create the user object
     user = {
       "_id": uuid.uuid4().hex,
       "name": request.form.get('name'),
       "email": request.form.get('email'),
       "password": request.form.get('password'),
-      "user_icon": "/assets/profile/" + choice(icons)
+      "user_icon": "/assets/profile/" + choice(icons),
+      "created_time" : datetime.datetime.utcnow(),
+      "last_modified_at" : datetime.datetime.utcnow()
     }
-    
+    empty = [index for index, value in user.items() if not value]
+    if empty:
+      return jsonify({ "error": f'Some requested data are not there: {", ".join(empty)}' }), 400
     # Encrypt the password
     user['password'] = pbkdf2_sha256.encrypt(user['password'])
+    user['deleted_at'] = None
 
     # Check for existing email address
     if db.users.find_one({ "email": user['email'] }):
@@ -34,7 +38,7 @@ class User:
 
     if db.users.insert_one(user):
       return self.start_session(user)
-
+    
     return jsonify({ "error": "Signup failed" }), 400
   
   def signout(self):

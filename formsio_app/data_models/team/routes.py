@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import render_template, jsonify
 from formsio_app.app import app
 from .models import Team
 
@@ -12,6 +12,10 @@ def team_add_get():
 def team_join_get():
   teams = Team.get_teams()
   return render_template('team_select.html', teams = teams), 200
+@app.route('/team/get', methods=['GET'])
+def get_teams():
+  teams = Team.get_teams()
+  return jsonify({'teams' : teams}), 200
 
 @app.route('/team/add', methods=['POST'])
 def team_add():
