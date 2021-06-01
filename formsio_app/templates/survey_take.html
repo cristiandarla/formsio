@@ -2,14 +2,17 @@
 {% block title %} survey {{session['form_title']}} {% endblock %}
 {%block content%}
 <div class="wrapper-profile">
-    <form id="survey">
+    <div id="survey">
         <input type="text" id="question-id" name="question-id" value="" hidden>
         <h4 id="question"></h4>
         <div class="scrollable-div answers" id="answers">
             <input type="text" id="qtype-survey" name="qtype" value="" hidden>
         </div>
-        <div class="btn-prm" id="survey-next" onclick="storeCurrent(false)"><span>Next</span></div>
-        <div class="btn-green" id="survey-final" onclick="storeCurrent(true)"><span>Finish</span></div>
-    </form>
+        <!-- <div class="btn-prm" id="survey-next" onclick="storeCurrent(false)"><span>Next</span></div>
+            <div class="btn-green" id="survey-final" onclick="storeCurrent(true)"><span>Finish</span></div> -->
+    </div>
+    <div class="buttons">
+
+    </div>
 </div>
 {%endblock%}

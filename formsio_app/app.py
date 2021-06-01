@@ -64,12 +64,18 @@ def sesiune():
     sesiune['current_form_id'] = session['current_form_id']
   if 'form_title' in session:
     sesiune['form_title'] = session['form_title']
+  if 'questions' in session:
+    sesiune['questions'] = session['questions']
+  if 'currentQuestion' in session:
+    sesiune['currentQuestion'] = session['currentQuestion']
+  if 'isStarted' in session:
+    sesiune['isStarted'] = session['isStarted']
 
   return jsonify({'session' : sesiune})
 
-@app.route('/service-worker.js')
-def service_worker():
-  return app.send_static_file('service-worker.js')
+# @app.route('/service-worker.js')
+# def service_worker():
+#   return app.send_static_file('service-worker.js')
 
 @app.errorhandler(403)
 def page_not_found(e):

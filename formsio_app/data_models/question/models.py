@@ -11,6 +11,7 @@ class Question:
 			for value in data:
 				del value['isDeleted']
 				final.append(value)
+			final = sorted(final, key = (lambda x: x['position']))
 			return final
 		else:
 			return []
@@ -26,7 +27,7 @@ class Question:
 			"_id" : uuid.uuid4().hex,
 			"text" : request.form.get('text'),
 			"question_type" : request.form.get('type'),
-			"form_id" : form_id,
+			"form_id" : [form_id],
 			"isDeleted" : False,
 			"isFavourite" : False,
 			"trailing_question" : None
@@ -67,7 +68,14 @@ class Question:
 				remove_old['$unset'] = {'answers' : {}}
 
 			if new_has_answers:
-				final['$addToSet'] = {'answers' : {'$each' : request.form.getlist('answers[]')}}
+				answers = []
+				for index, entry in enumerate(request.form.getlist('answers[]'), start=1):
+					answer = {}
+					answer['text'] = entry
+					answer['ordinal_pos'] = index
+					answer['trailing_question'] = None
+					answers.append(answer)
+				final['$addToSet'] = {'answers' : {'$each' : answers}}
 
 			if updates:
 				final['$set'] = updates
@@ -103,6 +111,17 @@ class Question:
 			return jsonify(db.questions.find_one(request.form.get('id'))), 200
 		else:
 			return jsonify({'error' : 'Could not delete the question!'}), 400
+	
+	def get_fav_question():
+		if 'current_form_id' in session.keys():
+			data = db.questions.find({'form_id': session['current_form_id'], 'isFavourite' : False})
+			final = []
+			for value in data:
+				final.append(value)
+			final = sorted(final, key = (lambda x: x['position']))
+			return jsonify({'data' : final})
+		else:
+			return jsonify({'data' : []})
 
 	def get_question():
 		quest = db.questions.find_one({'_id' : request.form.get('id')})

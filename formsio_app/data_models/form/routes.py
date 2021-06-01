@@ -1,5 +1,6 @@
-from flask import render_template, session, url_for, jsonify
-from formsio_app.app import app, login_required, no_login_required, db
+from flask import render_template, session, jsonify
+from flask.globals import request
+from formsio_app.app import app, login_required, db
 from .models import Form
 
 @app.route('/forms', methods=['GET'])
@@ -41,10 +42,25 @@ def individiual_form(guid):
   for value in db.questions.find({'form_id':guid, 'isDeleted' : {'$ne' : True}}):
     del value['isDeleted']
     questions.append(value)
+  questions = sorted(questions, key = (lambda x: x['position']))
   form  = db.forms.find_one({'_id' : guid})
   if form is not None:
     session['form_title'] = form['title']
   return render_template('form_individual.html', questions = questions), 200
+@app.route('/forms/<guid>/results', methods=['POST', 'GET'])
+@login_required
+def result_form(guid):
+  if request.method == 'GET':
+    return render_template('survey_results.html')
+  else:
+    surveys = Form.get_results()
+    questions = []
+    for value in db.questions.find({'form_id':guid, 'isDeleted' : {'$ne' : True}}):
+      del value['isDeleted']
+      questions.append(value)
+    questions = sorted(questions, key = (lambda x: x['position']))
+    return jsonify({'data' : {'surveys' : surveys, 'questions' : questions}}), 200
+
 
 @app.route('/forms/submit', methods=['POST'])
 @login_required

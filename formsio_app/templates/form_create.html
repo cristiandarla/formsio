@@ -2,7 +2,7 @@
 {% block title %} create form{% endblock %}
 {%block content%}
 <div class="wrapper-profile light-cyan">
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="questionModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-body">
@@ -13,7 +13,7 @@
                             <option value="text" selected>text</option>
                             <option value="checkbox">checkbox</option>
                             <option value="radio">radio</option>
-                            <option value="file">file upload</option>
+                            <!-- <option value="file">file upload</option> -->
                         </select>
                         <div class="scrollable-div answers" id="answers">
                         </div>
@@ -23,6 +23,19 @@
                 <div class="modal-footer">
                     <button type="button" class="btn-snd" data-dismiss="modal">Back</button>
                     <button type="button" class="btn-prm" onclick="addQuestion()" id="addq">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="favouriteQuestions" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="scrollable-div step2" id="favQuestions">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-snd" data-dismiss="modal">Back</button>
                 </div>
             </div>
         </div>
@@ -40,7 +53,7 @@
             <input type="text" class="form-control" id="form-desc" name="form-desc">
         </div>    
     </div>
-    <div class="add-questions" data-toggle="modal" data-target="#exampleModal" onclick='resetModal()'>
+    <div class="add-questions" data-toggle="modal" data-target="#questionModal" onclick='resetModal()'>
         <div class="plus-icon">
             <i class="fas fa-plus"></i>
         </div>
@@ -53,7 +66,7 @@
     </div>
     <div class="bottom">
         <div class="question_buttons" id="question_buttons">
-            <div class="btn-green" id="fav_questions">Favourite questions</div>
+            <div class="btn-green" id="fav_questions" data-toggle="modal" data-target="#favouriteQuestions"  onclick='getFavs()'>Favourite questions</div>
             <div class="btn-prm" id="next_step">Next</div>
         </div>
     </div>

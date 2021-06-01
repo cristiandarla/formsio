@@ -1,5 +1,8 @@
 var session;
 var all_questions = []
+var answers = []
+var remainingQuestionsPositions = []
+const MULTIPLE_CHOICE = ['radio', 'checkbox']
 $.ajax({
 	url: '/session',
 	type: "GET",
@@ -85,8 +88,10 @@ $.ajax({
 					var password = document.getElementById("password").value
 					if(password && e.target.value){
 						if(password === e.target.value){
+							e.target.classList.remove('wrong-input')
 							e.target.classList.add('correct-input')
 						}else{
+							e.target.classList.remove('correct-input')
 							e.target.classList.add('wrong-input')
 						}
 					}else{
@@ -127,28 +132,28 @@ $.ajax({
 				})
 				break
 			}
-			case '/survey': {
-				/*window.onbeforeunload = function(){
-					console.log('reload')
-					if(parseInt(sessionStorage.currentQuestion) > 0){
-						sessionStorage.currentQuestion = parseInt(sessionStorage.currentQuestion) - 1
-					}else{
-						sessionStorage.currentQuestion = 0
-					}
-				}*/
-				if(sessionStorage.getItem('isStarted') == null){
-					sessionStorage.currentQuestion = 0
-					sessionStorage.isStarted = 'true'
-					sessionStorage.answers = JSON.stringify([])
-				}
-				createQuestionSurvey()
-				$(window).on('unload', function(e){
-					e.preventDefault()
-					sessionStorage.removeItem('isStarted')
-					sessionStorage.removeItem('answers')
-				})
-				break
-			}
+			// case '/survey': {
+			// 	/*window.onbeforeunload = function(){
+			// 		console.log('reload')
+			// 		if(parseInt(sessionStorage.currentQuestion) > 0){
+			// 			sessionStorage.currentQuestion = parseInt(sessionStorage.currentQuestion) - 1
+			// 		}else{
+			// 			sessionStorage.currentQuestion = 0
+			// 		}
+			// 	}*/
+			// 	if(sessionStorage.getItem('isStarted') == null){
+			// 		sessionStorage.currentQuestion = 0
+			// 		sessionStorage.isStarted = 'true'
+			// 		sessionStorage.answers = JSON.stringify([])
+			// 	}
+			// 	createQuestionSurvey()
+			// 	$(window).on('unload', function(e){
+			// 		e.preventDefault()
+			// 		sessionStorage.removeItem('isStarted')
+			// 		sessionStorage.removeItem('answers')
+			// 	})
+			// 	break
+			// }
 			case '/forms/all':{
 				Notiflix.Loading.Custom('Loading...')
 				$('.forms').hide()
@@ -197,6 +202,9 @@ $.ajax({
 					}else{
 					e.style.display = 'none'
 					}
+					e.addEventListener('click', function(event){
+						console.log(e.parentNode.parentNode.id)
+					})
 				})})
 				$('#delete_button').on('click', function(e){$('.delete_div').each((_, e) => {
 					if(e.style.display === 'none'){
@@ -231,7 +239,7 @@ $.ajax({
 						if(resp.questions.length){
 							resp.questions.forEach((question, index) => {
 								all_questions.push(question)
-								var html = makeQuestionEntry(question, index + 1)
+								var html = makeQuestionEntry(question, index + 1, true, true, false)
 								$('#questions').append(html)
 							})
 						}
@@ -282,12 +290,13 @@ $.ajax({
 				$('#next_step').on('click', function(e){
 					e.preventDefault()
 					if($('#questions>').length > 0){
-						if($('#questions>')
-							.toArray()
-							.filter(elem => ['radio','checkbox']
-												.includes(elem.childNodes[0].childNodes[1].childNodes[1].innerText)).length !== 0){
+						var finalStepPossibilities = $('#questions>')
+														.toArray()
+														.filter(elem => MULTIPLE_CHOICE.includes(elem.childNodes[0].childNodes[1].childNodes[1].innerText))
+														.length
+						if(finalStepPossibilities !== 0 && $('#questions>').length > 1){
 							$('#questions>').each((id, elem) => {
-								if(['radio','checkbox'].includes(elem.childNodes[0].childNodes[1].childNodes[1].innerText)){
+								if(MULTIPLE_CHOICE.includes(elem.childNodes[0].childNodes[1].childNodes[1].innerText)){
 									elem.childNodes[1].childNodes[1].style.display = "block"
 									var entries = elem.childNodes[1].childNodes[1].childNodes
 									if($(`#trailing-${elem.id}>`).length === 0){
@@ -316,6 +325,8 @@ $.ajax({
 							$('#next_step').attr('id', 'final_step')
 							$('#final_step').on('click', function(e){
 								e.preventDefault()
+								//add code for simple branching here
+								congrats()
 							})
 						}else{
 							congrats()
@@ -328,6 +339,8 @@ $.ajax({
 				break
 			}
 			case "/forms/submit":{
+				confetti.start()
+				setTimeout(()=>{confetti.stop()}, 1500)
 				var span = document.createElement('span')
 					span.appendChild(document.createTextNode('Copy the link'))
 					$('#copylink_button').append(span)
@@ -365,7 +378,7 @@ $.ajax({
 					success: function(resp) {
 						if(resp.questions.length){
 							resp.questions.forEach((elem, index) => {
-								var html = makeQuestionEntry(elem, index + 1)
+								var html = makeQuestionEntry(elem, index + 1, false, false, false)
 								$('#questions').append(html)
 							})
 						}
@@ -383,6 +396,93 @@ $.ajax({
 					modifyForm(session.current_form_id)
 				})
 
+				$('#results-btn').on('click', function(e){
+					window.location.href = `/forms/${session.current_form_id}/results`
+				})
+				break
+			}
+			case `/forms/${session.current_form_id}/results`:{
+				$.ajax({
+					url: `/forms/${session.current_form_id}/results`,
+					type: "POST",
+					dataType: "json",
+					success: function(resp) {
+						resp.data.questions.forEach( (elem, index) => {
+							$('#questions').append(makeQuestionEntry(elem, index + 1, false, false, true))
+							var responses = []
+							resp.data.surveys.forEach( (survey, index) => {
+								responses = responses.concat(survey.answers.filter( (item) => item.question_id === elem._id))
+							})
+							if(elem.question_type === 'text'){
+								var current = $(`#questions-answers-${elem._id}`)
+								current.addClass('results-text')
+								responses.forEach(reponse => {
+									var div = document.createElement('div')
+									div.setAttribute('class','result-entry')
+									div.setAttribute('id','')
+									var span = document.createElement('span')
+										span.setAttribute('class', 'result-entry_text')
+										span.setAttribute('id', '')
+										span.appendChild(document.createTextNode(reponse.answer))
+									div.appendChild(span)
+									current.append(div)
+									// for(let i = 0; i < 10; i++){
+									// 	var div = document.createElement('div')
+									// 	div.setAttribute('class','result-entry')
+									// 	div.setAttribute('id','')
+									// 	var span = document.createElement('span')
+									// 		span.setAttribute('class', 'result-entry_text')
+									// 		span.setAttribute('id', '')
+									// 		span.appendChild(document.createTextNode(reponse.answer))
+									// 	div.appendChild(span)
+									// 	current.append(div)
+									// }
+								})
+							}else{
+								elem.answers.forEach((answer, index) => {
+									var positiveCount = responses.filter( response => response.answer[index].isSelected).length
+									var div = document.createElement('div')
+										div.setAttribute('class', 'text-right pr-2')
+										div.setAttribute('id', '')
+									var span = document.createElement('span')
+										span.setAttribute('class', 'text-right')
+										// span.appendChild(document.createTextNode(`${Math.floor(Math.random() * (responses.length + 1))} / ${responses.length}`))
+										span.appendChild(document.createTextNode(`${positiveCount} / ${responses.length}`))
+									div.appendChild(span)
+									$(`#trailing-${elem._id}`).append(div)
+									$(`#trailing-${elem._id}`).show()
+								})
+							}
+						})
+
+					},
+					error: function(resp) {
+						errorHandler(resp);
+					}
+				})
+
+				break
+			}
+			case `/survey/${session.current_form_id}`:{
+				
+				$.ajax({
+					url: `/survey/${session.current_form_id}`,
+					type: "POST",
+					dataType: "json",
+					success: function(resp) {
+						all_questions = resp.questions
+						remainingQuestionsPositions = all_questions.map(elem => elem.position)
+						createQuestionSurvey(remainingQuestionsPositions[0])
+					},
+					error: function(resp) {
+						errorHandler(resp);
+					}
+				});
+				break
+			}
+			case '/survey/congrats':{
+				confetti.start()
+				setTimeout(()=>{confetti.stop()}, 1500)
 				break
 			}
 		}
@@ -421,26 +521,23 @@ $.ajax({
 		});
 	
 		$('#survey-btn').on('click', function(e){
-			$.ajax({
-				url: '/survey/' + session.current_form_id,
-				type: "POST",
-				dataType: "json",
-				success: function(resp) {
-					sessionStorage.questions = JSON.stringify(resp.questions)
-					sessionStorage.currentQuestion = 0
-					sessionStorage.isStarted = 'true'
-					window.location.href = '/survey'
-				},
-				error: function(resp) {
-					errorHandler(resp);
-				}
-			});
+			window.location.href = `/survey/${session.current_form_id}`
 		})
 	
 	});
 })
 
 //utils
+function createButton(className, id, onClickValue, text){
+	var div = document.createElement('div')
+		div.setAttribute('class', className)
+		div.setAttribute('id', id)
+		div.setAttribute('onclick', `storeCurrent(${onClickValue})`)
+	var span = document.createElement('span')
+		span.appendChild(document.createTextNode(text))
+	div.appendChild(span)
+	$('.buttons').append(div)
+}
 function errorHandler(resp){
 	if([206, 400, 401].includes(resp.status)){
 		Notiflix.Notify.Failure(resp.responseJSON.error)
@@ -511,7 +608,7 @@ function makeJSON(question, qtype, id = null){
 		'type' 	: qtype													
 	};
 	id == null ? null : formData['_id'] = id;
-	if(["checkbox","radio"].includes(qtype)){
+	if(MULTIPLE_CHOICE.includes(qtype)){
 		var answers = $('.answer-input')
 						.map(function(idx, elem) {
 							return $(elem).val();
@@ -547,7 +644,7 @@ function sendPOSTReqeust(form, event, url, hasMessage, message, redirect, destin
 	})
 }
 function checkQType(value, ans){
-	if( ["checkbox", "radio"].includes($(value).val())){
+	if( MULTIPLE_CHOICE.includes($(value).val())){
 		if($("div.ind-ans").length === 0 ){
 			$("div#answers").append(ans);
 		}
@@ -566,42 +663,33 @@ function resetModal(){
 	$("div#btn-ans").hide();
 	$('div#answers>').remove();
 }
-function createQuestionSurvey(){
+function createQuestionSurvey(currentQuestionNo){
 
 	//cleanup first
-	$('#answers').children().remove()
+	// $('#answers').children().remove()
+	$('#answers').empty()
 	
-	var questions = JSON.parse(sessionStorage.questions)
-	var currentQuestion = questions[sessionStorage.currentQuestion]
-	sessionStorage.currentQuestion = parseInt(sessionStorage.currentQuestion) + 1
+	var currentQuestion = all_questions.find(elem => elem.position === currentQuestionNo)
 	$("input#question-id").val(currentQuestion._id)
-	//$('input#qtype-survey').val(currentQuestion.question_type)
 	var qtypeInput = document.createElement('input')
 		qtypeInput.setAttribute('type', 'hidden')
 		qtypeInput.setAttribute('name', 'qtype')
 		qtypeInput.setAttribute('id', 'qtype-survey')
 		qtypeInput.setAttribute('value', currentQuestion.question_type)
 	$('div#answers').append(qtypeInput)
-	if(questions.length > sessionStorage.currentQuestion){
-		$('div#survey-final').hide()
-		$('div#survey-next').show()
-	}else{
-		$('div#survey-next').hide()
-		$('div#survey-final').show()
-	}
 	$('h4#question').text(currentQuestion.text)
 	$('div#answers').show()
 	switch(currentQuestion.question_type){
 		case 'text':{
 			var div = document.createElement('div')
-				div.className = 'ind-ans row my-1 w-100'
-				$('div#answers').append(div)
+			div.className = 'ind-ans row my-1 w-100'
+			$('div#answers').append(div)
 			var input = document.createElement('input')
-				input.setAttribute('type', 'text')
-				input.setAttribute('name', 'ans')
-				input.setAttribute('id', 'answer')
-				input.className = 'answer-input'
-				div.append(input)
+			input.setAttribute('type', 'text')
+			input.setAttribute('name', 'ans')
+			input.setAttribute('id', 'answer')
+			input.className = 'answer-input'
+			div.append(input)
 			break;
 		}
 		case 'checkbox':{
@@ -616,38 +704,74 @@ function createQuestionSurvey(){
 			})
 			break;
 		}
-		case 'file':{
-			var div = document.createElement('div')
-				div.className = 'ind-ans row my-1 w-100'
-				$('div#answers').append(div)
-			currentQuestion.answers.forEach(() => {
-				var input = document.createElement('file')
-					input.setAttribute('type', 'radio')
-					input.setAttribute('name', 'ans')
-					input.setAttribute('id', 'currentQuestion._id')
-					input.className = 'answer-input'
-					div.append(input)
-			})
-			break;
-		}
+		// case 'file':{
+		// 	var div = document.createElement('div')
+		// 	div.className = 'ind-ans row my-1 w-100'
+		// 	$('div#answers').append(div)
+		// 	currentQuestion.answers.forEach(() => {
+		// 		var input = document.createElement('file')
+		// 		input.setAttribute('type', 'radio')
+		// 		input.setAttribute('name', 'ans')
+		// 		input.setAttribute('id', 'currentQuestion._id')
+		// 		input.className = 'answer-input'
+		// 		div.append(input)
+		// 	})
+		// 	break;
+		// }
+	}
+	if(answers.length === 0){
+		createButton('btn-prm', 'survey-next', false, 'Next')
+	}
+	if(all_questions.length === answers.length + 1){
+		$('div#survey-next').remove()
+		createButton('btn-green', 'survey-final', true, 'Finish')
 	}
 }
 function makeAnswerElement(val, index, qtype){
 	var div = document.createElement('div')
-	div.className = 'ind-ans row my-1 w-100'
+	div.className = 'survey-answers my-1 w-100'
 	div.id = 'ind-ans-' + (index + 1)
 	$('div#answers').append(div)
 	var input = document.createElement('input')
 		input.setAttribute('type', qtype)
-		//input.setAttribute('hidden', true)
+		input.setAttribute('hidden', true)
 		input.setAttribute('name', 'ans')
-		input.setAttribute('id', val._id)
+		input.setAttribute('id', val.ordinal_pos)
 		input.className = 'answer-input'
 		div.append(input)
 	var label = document.createElement('label')
-		label.setAttribute('for', val._id)
-		label.innerHTML = val.answer
+		label.setAttribute('for', val.ordinal_pos)
+		label.innerHTML = val.text
 		div.append(label)
+	div.addEventListener('click', function(e){
+		if(qtype === 'radio'){
+			$('#answers>.survey-answers')
+			.toArray()
+			.forEach((e) => {e.querySelector('input').checked = false, e.classList.remove('active')})
+		}
+		e.target.querySelector('input').checked = !e.target.classList.contains('active')
+		if(e.target.querySelector('input').checked){
+			e.target.classList.add('active')
+		}else{
+			e.target.classList.remove('active')
+		}
+	})
+}
+function getFavs(){
+	$.ajax({
+		url: '/questions/fav/get',
+		type: "POST",
+		dataType: "json",
+		success: function(resp) {
+			$('#favQuestions').empty()
+			resp.data.forEach((elem, index) => {
+				$('#favQuestions').append(makeQuestionEntry(elem, index + 1, false, false, false))
+			})
+		},
+		error: function(resp) {
+			errorHandler(resp);
+		}
+	})
 }
 
 //team select
@@ -698,7 +822,7 @@ function makeTeamEntry(team, id){
 }
 
 //questions
-function makeQuestionEntry(question, id){
+function makeQuestionEntry(question, id, hasExtra, popupQuestion, answers){
 	var div = document.createElement('div')
 		div.setAttribute('class', 'question-entry')
 		div.setAttribute('id', question._id)
@@ -717,7 +841,7 @@ function makeQuestionEntry(question, id){
 	var qnameDiv = document.createElement('div')
 		qnameDiv.setAttribute('class', 'question-name')
 	var qname = document.createElement('span')
-		qname.setAttribute('class', 'text-justify question-text')
+		qname.setAttribute('class', 'text-justify question-text h5')
 		qname.appendChild(document.createTextNode(question.text))
 		qnameDiv.appendChild(qname)
 	
@@ -728,85 +852,89 @@ function makeQuestionEntry(question, id){
 		qtype.appendChild(document.createTextNode(question.question_type))
 		qtypeDiv.appendChild(qtype)
 		
-		var answersDiv = document.createElement('div')
-			answersDiv.setAttribute('class', 'questions-answers')
-			answersDiv.setAttribute('id', `questions-answers-${question._id}`)
-			answersDiv.style.display = 'none'
+	var answersDiv = document.createElement('div')
+		answersDiv.setAttribute('class', 'questions-answers')
+		answersDiv.setAttribute('id', `questions-answers-${question._id}`)
+	if(!answers){
+		answersDiv.style.display = 'none'
+	}
 
-		attributesDiv.appendChild(qnameDiv)
-		attributesDiv.appendChild(qtypeDiv)
-		if(['radio', 'checkbox'].includes(question.question_type)){
-			question.answers.forEach(elem => {
-				var answersDivEntry = document.createElement('div')
-					answersDivEntry.setAttribute('class', 'questions-answers_entry')
-				var pos = document.createElement('div')
-					pos.setAttribute('class', 'questions-answers_pos btn-pill main-pill')
-				var pos_span = document.createElement('span')
-					pos_span.appendChild(document.createTextNode(elem.ordinal_pos))
-					pos.appendChild(pos_span)
+	attributesDiv.appendChild(qnameDiv)
+	attributesDiv.appendChild(qtypeDiv)
+	if(MULTIPLE_CHOICE.includes(question.question_type)){
+		question.answers.forEach(elem => {
+			var answersDivEntry = document.createElement('div')
+				answersDivEntry.setAttribute('class', 'questions-answers_entry')
+			var pos = document.createElement('div')
+				pos.setAttribute('class', 'questions-answers_pos btn-pill main-pill')
+			var pos_span = document.createElement('span')
+				pos_span.appendChild(document.createTextNode(elem.ordinal_pos))
+				pos.appendChild(pos_span)
 
-				var text = document.createElement('div')
-					text.setAttribute('class', 'questions-answers_text')
-					
-				var text_span = document.createElement('span')
-					text_span.appendChild(document.createTextNode(elem.text))
-					text.appendChild(text_span)
-				answersDivEntry.appendChild(pos)
-				answersDivEntry.appendChild(text)
-				answersDiv.appendChild(answersDivEntry)
-			})
-			
+			var text = document.createElement('div')
+				text.setAttribute('class', 'questions-answers_text')
+				
+			var text_span = document.createElement('span')
+				text_span.appendChild(document.createTextNode(elem.text))
+				text.appendChild(text_span)
+			answersDivEntry.appendChild(pos)
+			answersDivEntry.appendChild(text)
+			answersDiv.appendChild(answersDivEntry)
+		})
+		if(popupQuestion){
 			qnameDiv.addEventListener('click', (e)=>{
 				e.preventDefault()
 				e.stopPropagation()
 				modifyQuestion(question._id)
 			})
-			qtypeDiv.addEventListener('click', (e)=>{
-				e.preventDefault()
-				e.stopPropagation()
-				var docAnswers = document.getElementById(`questions-answers-${question._id}`)
-				var trailingAnchor = document.getElementById(`trailing-${question._id}`)
-				if(docAnswers.style.display === 'none'){
-					docAnswers.style.display = 'block'
-					trailingAnchor.style.display = 'flex'
-				}else{
-					docAnswers.style.display = 'none'
-					trailingAnchor.style.display = 'none'
-				}
-			})
-		}else{
-			attributesDiv.addEventListener('click', (e)=>{
-				e.preventDefault()
-				e.stopPropagation()
-				modifyQuestion(question._id)
-			})
 		}
-
+		qtypeDiv.addEventListener('click', (e)=>{
+			e.preventDefault()
+			e.stopPropagation()
+			var docAnswers = document.getElementById(`questions-answers-${question._id}`)
+			var trailingAnchor = document.getElementById(`trailing-${question._id}`)
+			if(docAnswers.style.display === 'none'){
+				docAnswers.style.display = 'block'
+				trailingAnchor.style.display = 'flex'
+			}else{
+				docAnswers.style.display = 'none'
+				trailingAnchor.style.display = 'none'
+			}
+		})
+	}else{
+		attributesDiv.addEventListener('click', (e)=>{
+			e.preventDefault()
+			e.stopPropagation()
+			modifyQuestion(question._id)
+		})
+	}
 	var icons = document.createElement('div')
 		icons.setAttribute('class', 'icons')
-	var img = document.createElement('img')
-		img.setAttribute('src', '/static/assets/icons/' + (question.isFavourite ? 'star-yellow.png' : 'star-grey.png'))
-		img.setAttribute('alt', question.isFavourite ? 'star-yellow' : 'star-grey')
-		img.setAttribute('id', question.isFavourite ? 'fav' : 'not-fav')
-		img.addEventListener('click',  (e) => {
-			e.preventDefault()
-			e.stopPropagation()
-			makeFav(e.target)
-		})
-	var deleteDiv = document.createElement('div')
-		deleteDiv.setAttribute('class', 'trash_div')
-		deleteDiv.addEventListener('click',  (e) => {
-			e.preventDefault()
-			e.stopPropagation()
-			deleteQuestion(question._id)
-		})
-	var deleteIcon = document.createElement('i')
-		deleteIcon.setAttribute('class', 'fas fa-trash trash')
-
-		deleteDiv.appendChild(deleteIcon)
-
-		icons.appendChild(img)
-		icons.appendChild(deleteDiv)
+	if(hasExtra){
+		var img = document.createElement('img')
+			img.setAttribute('src', '/static/assets/icons/' + (question.isFavourite ? 'star-yellow.png' : 'star-grey.png'))
+			img.setAttribute('alt', question.isFavourite ? 'star-yellow' : 'star-grey')
+			img.setAttribute('id', question.isFavourite ? 'fav' : 'not-fav')
+			img.addEventListener('click',  (e) => {
+				e.preventDefault()
+				e.stopPropagation()
+				makeFav(e.target)
+			})
+		var deleteDiv = document.createElement('div')
+			deleteDiv.setAttribute('class', 'trash_div')
+			deleteDiv.addEventListener('click',  (e) => {
+				e.preventDefault()
+				e.stopPropagation()
+				deleteQuestion(question._id)
+			})
+		var deleteIcon = document.createElement('i')
+			deleteIcon.setAttribute('class', 'fas fa-trash trash')
+	
+			deleteDiv.appendChild(deleteIcon)
+	
+			icons.appendChild(img)
+			icons.appendChild(deleteDiv)
+	}
 
 	firstDiv.appendChild(noDiv)
 	firstDiv.appendChild(attributesDiv)
@@ -861,7 +989,7 @@ function modifyQuestion(id){
 		$('div#answers>').remove();
 		$("div#btn-ans").hide();
 		$("div#answers").hide();
-		if(['checkbox', 'radio'].includes(currentQuestion.question_type)){
+		if(MULTIPLE_CHOICE.includes(currentQuestion.question_type)){
 			$("div#answers").show();
 			$("div#btn-ans").show();
 			currentQuestion.answers.forEach(
@@ -909,7 +1037,7 @@ function modifyQuestion(id){
 				}
 			)
 		}
-		$('#exampleModal').modal('toggle');
+		$('#questionModal').modal('toggle');
 		
 		var regex = '^[0-9a-f]{12}[1-5][0-9a-f]{3}[89ab][0-9a-f]{15}$'
 		if(window.location.pathname.split('/').splice(-1)[0].match(regex)){
@@ -927,7 +1055,7 @@ function addQuestion(){
 		isModified = !(question === currentQuestion.text && qtype === currentQuestion.question_type);
 	}
 
-	if(["checkbox", "radio"].includes(qtype)){
+	if(MULTIPLE_CHOICE.includes(qtype)){
 		var data = makeJSON(question, qtype);
 		hasCurrentQuestion ? isModified = isModified ||
 			!(data.answers.sort().join(',') === currentQuestion.answers.sort().join(',')) : null;
@@ -942,7 +1070,7 @@ function addQuestion(){
 	}
 
 	if(hasCurrentQuestion && !isModified){
-		$('#exampleModal').modal('toggle');
+		$('#questionModal').modal('toggle');
 		successMessage('No modification was found!');
 		resetModal();
 		return;
@@ -963,18 +1091,21 @@ function addQuestion(){
 			data: formData,
 			dataType: "json",
 			success: function(resp) {
-				$('#exampleModal').toggle()
+				$('#questionModal').toggle()
 				successMessage(isModified ? 'The question has been updated succesfully!' : 'The question has been sent succesfully!')
-				$('#questions').append(makeQuestionEntry(resp, $('#questions>').length + 1))
-				$('#exampleModal').modal('hide')
+				$('#questionModal').modal('hide')
 				if(isModified){
 					var questionIndex = all_questions.findIndex(elem => elem._id === resp._id)
 					if(questionIndex >= 0){
+						$('#questions').append(makeQuestionEntry(resp, questionIndex + 1, true, true, false))
+						$('#questions>')[questionIndex].remove()
 						all_questions[questionIndex] = resp
 					}else{
+						$('#questions').append(makeQuestionEntry(resp, $('#questions>').length + 1, true, true, false))
 						all_questions.push(resp)
 					}
 				}else{
+					$('#questions').append(makeQuestionEntry(resp, $('#questions>').length + 1, true, true, false))
 					all_questions.push(resp)
 				}
 			},
@@ -1027,7 +1158,7 @@ function removeCurrentAnswer(current){
 	}
 }
 function addNewAnswer(){
-	if(['radio','checkbox'].includes($('select[name=qtype]').val())){
+	if(MULTIPLE_CHOICE.includes($('select[name=qtype]').val())){
 		var value = ($("div.ind-ans").length == 0) ? 1 : parseInt($("div.ind-ans")[$("div.ind-ans").length - 1].id.split('-')[$("div.ind-ans")[$("div.ind-ans").length - 1].id.split('-').length - 1]) + 1;
 		var newAnswer = `<div class="ind-ans row my-1 w-100" id="ind-ans-${ value }">
 		<div class="col-10">
@@ -1047,6 +1178,9 @@ function makeFormEntry(form){
 		div.setAttribute('class', 'list-item-rounded')
 		div.setAttribute('id', form._id)
 		div.addEventListener('click', (e)=>{
+			e.preventDefault()
+			e.stopPropagation()
+			e.stopImmediatePropagation()
 			window.location.href = `/forms/${form._id}`
 		})
 	var span = document.createElement('span')
@@ -1164,8 +1298,10 @@ function storeCurrent(isLast){
 	var question_id = $('input#question-id').val()
 	var qtype = $("input#qtype-survey").val()
 	var answer = {'question_id': question_id, 'question_type': qtype}
-	var answers = sessionStorage.getItem('answers') === null ? [] : JSON.parse(sessionStorage.answers) 
-	var inputValue = null
+	var trailingPositions = []
+	var currentQuestion = all_questions.find(elem => elem._id === question_id)
+	remainingQuestionsPositions.splice(0,1)
+	var inputValue;
 	switch(qtype){
 		case 'text':{
 			inputValue = $('input#answer').val()
@@ -1174,20 +1310,7 @@ function storeCurrent(isLast){
 			}else{
 				answer['answer'] = inputValue
 				answers.push(answer)
-				sessionStorage.answers = JSON.stringify(answers)
-				isLast ? sendSurvey() : createQuestionSurvey()
-			}
-			break
-		}
-		case 'file':{
-			inputValue = $('input#answer').val()
-			if(inputValue == ''){
-				Notiflix.Notify.Warning('The answer cannot be empty!')
-			}else{
-				answer['answer'] = inputValue
-				answers.push(answer)
-				sessionStorage.answers = JSON.stringify(answers)
-				isLast ? sendSurvey() : createQuestionSurvey()
+				isLast ? sendSurvey() : createQuestionSurvey(remainingQuestionsPositions[0])
 			}
 			break
 		}
@@ -1198,7 +1321,7 @@ function storeCurrent(isLast){
 				if(elem.checked){
 					isChecked = true
 				}
-				inputValue.push({'answer_id' : elem.id , 'isSelected' : elem.checked })
+				inputValue.push({'answer_position' : parseInt(elem.id) , 'isSelected' : elem.checked })
 			})
 			if(inputValue == [] || !isChecked){
 				Notiflix.Notify.Warning('The answer cannot be empty!')
@@ -1206,20 +1329,50 @@ function storeCurrent(isLast){
 			}else{
 				answer['answer'] = inputValue
 				answers.push(answer)
-				sessionStorage.answers = JSON.stringify(answers)
-				isLast ? sendSurvey() : createQuestionSurvey()
+				answersPosition = inputValue
+					.filter(elem => elem.isSelected)
+					.map(elem => elem.answer_position)
+					trailing = currentQuestion.answers
+									.filter(elem => elem.trailing_question !== null && answersPosition.includes(elem.ordinal_pos))
+									.map(elem => elem.trailing_question)
+						trailing.forEach(elem => {
+							currentPosition = all_questions.find(element => element._id === elem).position
+							trailingPositions.push(currentPosition)
+							remainingQuestionsPositions.splice(remainingQuestionsPositions.findIndex(element => element === currentPosition),1)
+						})
+						remainingQuestionsPositions = trailingPositions.concat(remainingQuestionsPositions)
+				isLast ? sendSurvey() : createQuestionSurvey(remainingQuestionsPositions[0])
 			}
 			break
 		}
 		case 'radio':{
-			inputValue = $('input#answer').val()
-			if(inputValue == ''){
+			inputValue = []
+			var isChecked = false
+			$('#answers div input').each((index, elem) => {
+				if(elem.checked){
+					isChecked = true
+				}
+				inputValue.push({'answer_position' : elem.id , 'isSelected' : elem.checked })
+			})
+			if(inputValue == [] || !isChecked){
 				Notiflix.Notify.Warning('The answer cannot be empty!')
+				return
 			}else{
 				answer['answer'] = inputValue
 				answers.push(answer)
-				sessionStorage.answers = JSON.stringify(answers)
-				isLast ? sendSurvey() : createQuestionSurvey()
+				answersPosition = inputValue
+					.filter(elem => elem.isSelected)
+					.map(elem => elem.answer_position)
+					trailing = currentQuestion.answers
+									.filter(elem => elem.trailing_question !== null && answersPosition.includes(elem.ordinal_pos))
+									.map(elem => elem.trailing_question)
+						trailing.forEach(elem => {
+							currentPosition = all_questions.find(element => element._id === elem).position
+							trailingPositions.push(currentPosition)
+							remainingQuestionsPositions.splice(remainingQuestionsPositions.findIndex(element => element === currentPosition),1)
+						})
+						remainingQuestionsPositions = trailingPositions.concat(remainingQuestionsPositions)
+				isLast ? sendSurvey() : createQuestionSurvey(remainingQuestionsPositions[0])
 			}
 			break
 		}
@@ -1228,7 +1381,7 @@ function storeCurrent(isLast){
 function sendSurvey(){
 	data = {
 		'form_id' : session.current_form_id,
-		'answers' : sessionStorage.answers
+		'answers' : JSON.stringify(answers)
 	}
 	console.log(data)
 	$.ajax({

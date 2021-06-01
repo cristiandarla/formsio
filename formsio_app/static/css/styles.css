@@ -262,7 +262,7 @@ form#login {
     box-shadow: 0 0 50px var(--cyan-alpha);
 }
 
-@-webkit-keyframes text-glow {
+@keyframes text-glow {
     from {
         text-shadow: 0 0 10px var(--white), 0 0 20px var(--white),
             0 0 30px var(--cyan-alpha), 0 0 40px var(--cyan-alpha),
@@ -284,7 +284,7 @@ form#login {
     display: none;
 }
 
-.btn-prm, .btn-snd, .btn-ans, .btn-green{
+.btn-prm, .btn-snd, .btn-ans, .btn-green, .btn-outline-prm{
     color: var(--black);
     border: none;
     border-radius: 25px;
@@ -300,13 +300,17 @@ form#login {
 .btn-prm{
     background: var(--cyan) !important;
 }
+.btn-outline-prm{
+    background: var(--pure-white) !important;
+    border:2px solid var(--cyan) !important;
+}
 .modal-footer .btn-snd, .btn-snd{
     background: var(--light-red) !important;
 }
 .btn-green{
     background: var(--green) !important;
 }
-.btn-prm:hover{
+.btn-prm:hover, .btn-outline-prm:hover{
     background: var(--cyan-alpha) !important;
 }
 .btn-snd:hover{
@@ -320,12 +324,12 @@ form#login {
     display: flex;
     justify-content: center;
     /* width: var(--full-size, -webkit-fill-available); */
-    background: var(--pure-white) !important;
+    background: var(--green) !important;
     border: 3px solid var(--light-grey-alpha);
 
 }
 .btn-ans:hover{
-    background: var(--white) !important;
+    background: var(--green-alpha) !important;
     border: 3px solid var(--light-grey-alpha);
 
 }
@@ -339,7 +343,7 @@ textarea {
 
 .qtype, .question:focus{
     border-radius: 25px;
-    background-color: var(--light-grey);
+    /* background-color: var(--light-grey); */
 }
 .question, .question:focus{
     border-radius: 25px!important;
@@ -358,7 +362,6 @@ textarea {
     display: flex;
     align-items: center;
     height: 3rem;
-    padding: 0 1rem;
 }
 .ind-ans #answer{
     width: 100%;
@@ -368,6 +371,8 @@ textarea {
 .answer-input{
     border: none;
     border-radius: inherit;
+    width: 100%;
+    outline: none;
 }
 
 .btn-pill{
@@ -411,7 +416,7 @@ textarea {
     height: 16px;
 }
 
-div:is(.btn-snd, .btn-prm, .btn-green){
+div:is(.btn-snd, .btn-prm, .btn-green, .btn-outline-prm){
     text-align: center;
     display: flex;
     align-items: center;
@@ -539,7 +544,7 @@ img.teamwork {
     color: var(--pure-white);
 }
 
-form .buttons {
+form .buttons, .wrapper-profile .buttons{
     padding: 0 4rem;
     position: absolute;
     bottom: 0;
@@ -613,7 +618,7 @@ form .buttons {
     width: 100%;
 }
   /*question step2*/
-.step2 {
+.step2, .results, .results-text {
     height: 63vh;
     margin-bottom: 1rem;
     padding: 2rem;
@@ -623,6 +628,7 @@ form .buttons {
     background-color: var(--pure-white);
     box-shadow: 0 3px 26px 0 rgb(0 0 0 / 20%);
     align-items: end;
+    overflow-x: scroll;
 }
 .question_buttons{
     display: flex;
@@ -709,13 +715,45 @@ form .buttons {
 }
 .title {
     height: 30vh;
-    display: flex;
+    display: flex; 
     justify-content: center;
     align-items: center;
 }
 .alternative {
     display: flex;
     gap: 1rem;
+}
+
+/* answers survey */
+.survey-answers{
+    display: flex;
+    align-items: center;
+    border: 2px solid var(--light-grey);
+    border-radius: 25px;
+    height: 3rem;
+    padding: 0 3rem;
+    margin: 1rem 0;
+    width: 100%;
+}
+.survey-answers.active{
+    background-color: var(--dark-cyan);
+    color: var(--pure-white);
+}
+
+.results{
+    height: 85vh;
+}
+.results-text {
+    height: 25vh;
+    padding: .1rem;
+    margin: 0.5rem 0;
+}
+.result-entry{
+    background: var(--pure-white);
+    border: 2px solid var(--cyan);
+    margin: .2rem 1.5rem;
+    padding: .2rem 1rem;
+    border-radius: 25px;
 }
 @media (min-width: 769px){
     .modal-footer{

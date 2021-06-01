@@ -13,7 +13,7 @@
                             <option value="text" selected>text</option>
                             <option value="checkbox">checkbox</option>
                             <option value="radio">radio</option>
-                            <option value="file">file upload</option>
+                            <!-- <option value="file">file upload</option> -->
                         </select>
                         <div class="scrollable-div answers" id="answers">
                         </div>
@@ -43,9 +43,10 @@
     </div>
     <div class="bottom">
         <div class="question_buttons" id="individual_buttons">
-            <div class="btn-green" id='modify_button'><span>Modify the form</span></div>
+            <div class="btn-outline-prm" id='modify_button'><span>Modify the form</span></div>
             {% if questions|length > 0 %}
-            <div class="btn-prm" id="survey-btn"><span>See survey</span></div>
+            <div class="btn-prm" id="results-btn"><span>See results</span></div>
+            <div class="btn-outline-prm" id="survey-btn"><span>See survey</span></div>
             {% endif %}
         </div>
     </div>

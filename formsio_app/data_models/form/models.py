@@ -68,4 +68,11 @@ class Form:
 					return jsonify({'success' : 'The form has been created successfully!'}), 200
 				else:
 					return jsonify({'error' : 'Could not create the form!'}), 400
-
+	
+	def get_results():
+		data = db.surveys.find({'form_id' : session['current_form_id']})
+		final = []
+		if data:
+			for value in data:
+				final.append(value)
+		return final

@@ -1,6 +1,6 @@
-from flask import Flask, jsonify, request, session, redirect
+from flask import jsonify, request
 from formsio_app.app import db
-import uuid, os, json
+import uuid, json
 
 class Survey:
 
@@ -10,6 +10,7 @@ class Survey:
         for value in data:
             del value['isDeleted']
             final.append(value)
+        final = sorted(final, key = (lambda x: x['position']))
         return final
 
     def save_question():
