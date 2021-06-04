@@ -436,6 +436,7 @@ div:is(.btn-snd, .btn-prm, .btn-green, .btn-outline-prm){
     overflow: hidden;
     line-height: 0;
     transform: rotate(180deg);
+    height: 22%;
 }
 
 .custom-shape-divider-bottom-1616019804 svg {
@@ -700,7 +701,6 @@ form .buttons, .wrapper-profile .buttons{
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 23vh;
 }
 .congrats {
     display: flex;
@@ -711,10 +711,10 @@ form .buttons, .wrapper-profile .buttons{
 }
 .main-content{
     background-color: var(--cyan);
-    height: 48vh;
+    height: 48%;
 }
 .title {
-    height: 30vh;
+    height: 30%;
     display: flex; 
     justify-content: center;
     align-items: center;
