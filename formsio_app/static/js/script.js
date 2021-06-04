@@ -3,6 +3,8 @@ var all_questions = []
 var answers = []
 var remainingQuestionsPositions = []
 const MULTIPLE_CHOICE = ['radio', 'checkbox']
+var currentQuestion = null
+var sortable
 $.ajax({
 	url: '/session',
 	type: "GET",
@@ -43,6 +45,14 @@ $.ajax({
 			backgroundColor:"rgb(205, 241, 244)",
 			messageColor:"rgb(255, 255, 255)"
 		})
+		Notiflix.Block.Init({
+			messageFontSize:"30px",
+			cssAnimationDuration:400,
+			svgSize:"100px",
+			svgColor:"rgb(90, 210, 218)",
+			backgroundColor:"rgb(205, 241, 244)",
+			messageColor:"rgb(255, 255, 255)"
+		})
 	
 		if(window.innerWidth <= 425){
 			Notiflix.Notify.Init({
@@ -50,7 +60,6 @@ $.ajax({
 			})
 		}
 		//init
-		var currentQuestion = null;
 		var redirectError = $("p#redirect-error").text()
 		let initialAnswer = `
 		<div class="ind-ans row my-1 w-100" id="ind-ans-1">
@@ -132,31 +141,8 @@ $.ajax({
 				})
 				break
 			}
-			// case '/survey': {
-			// 	/*window.onbeforeunload = function(){
-			// 		console.log('reload')
-			// 		if(parseInt(sessionStorage.currentQuestion) > 0){
-			// 			sessionStorage.currentQuestion = parseInt(sessionStorage.currentQuestion) - 1
-			// 		}else{
-			// 			sessionStorage.currentQuestion = 0
-			// 		}
-			// 	}*/
-			// 	if(sessionStorage.getItem('isStarted') == null){
-			// 		sessionStorage.currentQuestion = 0
-			// 		sessionStorage.isStarted = 'true'
-			// 		sessionStorage.answers = JSON.stringify([])
-			// 	}
-			// 	createQuestionSurvey()
-			// 	$(window).on('unload', function(e){
-			// 		e.preventDefault()
-			// 		sessionStorage.removeItem('isStarted')
-			// 		sessionStorage.removeItem('answers')
-			// 	})
-			// 	break
-			// }
 			case '/forms/all':{
-				Notiflix.Loading.Custom('Loading...')
-				$('.forms').hide()
+				Notiflix.Block.Standard('#forms-list', 'Loading...')
 				$.ajax({
 					url: '/forms/all',
 					type: "POST",
@@ -189,8 +175,7 @@ $.ajax({
 							div.appendChild(buttonsDiv)	
 							$('.forms').append(div)
 						}
-						Notiflix.Loading.Remove(600)
-						$('.forms').show()
+						Notiflix.Block.Remove('#forms-list', 200)
 					},
 					error: function(resp) {
 						errorHandler(resp);
@@ -216,9 +201,7 @@ $.ajax({
 				break
 			}
 			case'/forms/create/question/add':{
-			
-				Notiflix.Loading.Custom('Loading...')
-				$('.wrapper-profile').hide()
+				Notiflix.Block.Standard('#step2', 'Loading...')
 	
 				$.ajax({
 					url: '/forms/desc',
@@ -243,8 +226,7 @@ $.ajax({
 								$('#questions').append(html)
 							})
 						}
-						Notiflix.Loading.Remove(600)
-						$('.wrapper-profile').show()
+						Notiflix.Block.Remove('#step2', 200)
 					},
 					error: function(resp) {
 						errorHandler(resp);
@@ -276,27 +258,34 @@ $.ajax({
 							changeTitleDesc(false)
 						}
 					})
-				Sortable.create(document.getElementById('questions'),{
+				sortable = Sortable.create(document.getElementById('questions'),{
 					onEnd: function(event){
 						aux_questions = []
 						$('#questions>').each((id,elem) => {
-							aux_questions.push(all_questions.find(quest => quest._id === elem.id))
+							currentQ = all_questions.find(quest => quest._id === elem.id)
+							currentQ.position = id
+							aux_questions.push(currentQ)
 
 							elem.children[0].children[0].children[0].innerText = id + 1
 						})
 						all_questions = aux_questions
 					}
 				})
+				let destroySortable = true
 				$('#next_step').on('click', function(e){
 					e.preventDefault()
+					$('#add-questions').remove()
+					if(destroySortable){
+						sortable.destroy()
+						destroySortable = false
+					}
 					if($('#questions>').length > 0){
 						var finalStepPossibilities = $('#questions>')
 														.toArray()
-														.filter(elem => MULTIPLE_CHOICE.includes(elem.childNodes[0].childNodes[1].childNodes[1].innerText))
-														.length
-						if(finalStepPossibilities !== 0 && $('#questions>').length > 1){
-							$('#questions>').each((id, elem) => {
-								if(MULTIPLE_CHOICE.includes(elem.childNodes[0].childNodes[1].childNodes[1].innerText)){
+														.filter((elem, index) => MULTIPLE_CHOICE.includes(elem.childNodes[0].childNodes[1].childNodes[1].innerText) && index < ($('#questions>').length - 1))
+						if(finalStepPossibilities.length !== 0 && $('#questions>').length > 1){
+							$('#questions>').each((index, elem) => {
+								if(MULTIPLE_CHOICE.includes(elem.childNodes[0].childNodes[1].childNodes[1].innerText) && index < ($('#questions>').length - 1)){
 									elem.childNodes[1].childNodes[1].style.display = "block"
 									var entries = elem.childNodes[1].childNodes[1].childNodes
 									if($(`#trailing-${elem.id}>`).length === 0){
@@ -304,28 +293,41 @@ $.ajax({
 											var select = document.createElement('select')
 												select.setAttribute('class', 'select-trailing')
 												select.setAttribute('id', `trailing-${innerElem.childNodes[0].innerText}-${elem.id}`)
+												select.setAttribute('style', 'text-align-last: end;')
+											if(![null, undefined].includes(all_questions.find(question => question._id === elem.id))){
+
+											}
 											var nullOption = document.createElement('option')
 												nullOption.setAttribute('value', '')
 											select.appendChild(nullOption)
 				
-											$('#questions>').each((index, question)=>{
-												if(question.id !== elem.id){
+											$('#questions>').each((localIndex, question)=>{
+												if(localIndex > index){
 													var option = document.createElement('option')
 														option.setAttribute('value',question.id)
 														option.innerText = question.childNodes[0].childNodes[0].innerText
+													if(all_questions[index].answers[id].trailing_question === question.id){
+														option.selected = true
+													}
 													select.appendChild(option)
 												}
+											})
+											select.addEventListener('change', function(e){
+												let questionId = e.target.id.split('-')[2]
+												let answerPostion = e.target.id.split('-')[1]
+												let questionIndex = all_questions.findIndex(elem => elem._id === questionId)
+												all_questions[questionIndex].answers[answerPostion-1].trailing_question = e.target.querySelector('option:checked').value
 											})
 											elem.childNodes[1].childNodes[2].appendChild(select)
 				
 										})
+										$(`#trailing-${elem.id}>`).show()
 									}
 								}
 							})
 							$('#next_step').attr('id', 'final_step')
 							$('#final_step').on('click', function(e){
 								e.preventDefault()
-								//add code for simple branching here
 								congrats()
 							})
 						}else{
@@ -356,8 +358,7 @@ $.ajax({
 				break
 			}
 			case `/forms/${session.current_form_id}`:{
-				Notiflix.Loading.Custom('Loading...')
-				$('.wrapper-profile').hide()
+				Notiflix.Block.Standard('#step2', 'Loading...')
 	
 				$.ajax({
 					url: '/forms/desc',
@@ -382,8 +383,7 @@ $.ajax({
 								$('#questions').append(html)
 							})
 						}
-						Notiflix.Loading.Remove(600)
-						$('.wrapper-profile').show()
+						Notiflix.Block.Remove('#step2', 600)
 					},
 					error: function(resp) {
 						errorHandler(resp);
@@ -402,6 +402,7 @@ $.ajax({
 				break
 			}
 			case `/forms/${session.current_form_id}/results`:{
+				Notiflix.Block.Standard('#results', 'Loading...')
 				$.ajax({
 					url: `/forms/${session.current_form_id}/results`,
 					type: "POST",
@@ -454,6 +455,7 @@ $.ajax({
 								})
 							}
 						})
+						Notiflix.Block.Remove('#results', 600)
 
 					},
 					error: function(resp) {
@@ -605,7 +607,8 @@ function Validate() {
 function makeJSON(question, qtype, id = null){
 	var formData = {
 		'text' 	: question,
-		'type' 	: qtype													
+		'type' 	: qtype,
+		'position': $('#questions > ').length												
 	};
 	id == null ? null : formData['_id'] = id;
 	if(MULTIPLE_CHOICE.includes(qtype)){
@@ -758,6 +761,7 @@ function makeAnswerElement(val, index, qtype){
 	})
 }
 function getFavs(){
+	Notiflix.Block.Standard('.modal-body #favQuestions','Loading...')
 	$.ajax({
 		url: '/questions/fav/get',
 		type: "POST",
@@ -765,15 +769,32 @@ function getFavs(){
 		success: function(resp) {
 			$('#favQuestions').empty()
 			resp.data.forEach((elem, index) => {
-				$('#favQuestions').append(makeQuestionEntry(elem, index + 1, false, false, false))
+				$('#favQuestions').append(makeQuestionEntry(elem, index + 1, false, false, false, true))
 			})
+			// $('#favouriteQuestions').modal('toggle');
+			Notiflix.Block.Remove('#favQuestions', 500)
 		},
 		error: function(resp) {
 			errorHandler(resp);
 		}
 	})
 }
-
+function addToForm(id, position){
+	$.ajax({
+		url: "/question/fav/add",
+		type: "POST",
+		data: {'id' : id, 'position' : position},
+		dataType: "json",
+		success: function(resp) {
+			successMessage(resp.success)
+			$('#questions').append(makeQuestionEntry(resp.data, $('#questions >').length + 1, true, true, false))
+			$('#favouriteQuestions').modal('toggle')
+		},
+		error: function(resp) {
+			errorHandler(resp);
+		}
+	})
+}
 //team select
 function makeTeamEntry(team, id){
 	var div = document.createElement('div')
@@ -822,7 +843,7 @@ function makeTeamEntry(team, id){
 }
 
 //questions
-function makeQuestionEntry(question, id, hasExtra, popupQuestion, answers){
+function makeQuestionEntry(question, id, hasExtra, popupQuestion, answers, isFavourite = false){
 	var div = document.createElement('div')
 		div.setAttribute('class', 'question-entry')
 		div.setAttribute('id', question._id)
@@ -902,11 +923,13 @@ function makeQuestionEntry(question, id, hasExtra, popupQuestion, answers){
 			}
 		})
 	}else{
-		attributesDiv.addEventListener('click', (e)=>{
-			e.preventDefault()
-			e.stopPropagation()
-			modifyQuestion(question._id)
-		})
+		if(popupQuestion){
+			attributesDiv.addEventListener('click', (e)=>{
+				e.preventDefault()
+				e.stopPropagation()
+				modifyQuestion(question._id)
+			})
+		}
 	}
 	var icons = document.createElement('div')
 		icons.setAttribute('class', 'icons')
@@ -951,7 +974,14 @@ function makeQuestionEntry(question, id, hasExtra, popupQuestion, answers){
 	secondDiv.appendChild(trailing)
 
 	div.appendChild(firstDiv) 
-	div.appendChild(secondDiv) 
+	div.appendChild(secondDiv)
+	if(isFavourite){
+		div.addEventListener('click', (e)=>{
+			e.preventDefault()
+			e.stopPropagation()
+			addToForm(question._id, $('#questions >').length)
+		})
+	}
 	return div
 }
 function deleteQuestion(id){
@@ -1049,12 +1079,11 @@ function addQuestion(){
 	var question = $('textarea[name=question').val();
 	var qtype = $('select[name=qtype]').val();
 	var flags = [question === ''];
-	var hasCurrentQuestion = currentQuestion != null;
+	var hasCurrentQuestion = currentQuestion !== null;
 	var isModified = false
 	if(hasCurrentQuestion){
 		isModified = !(question === currentQuestion.text && qtype === currentQuestion.question_type);
 	}
-
 	if(MULTIPLE_CHOICE.includes(qtype)){
 		var data = makeJSON(question, qtype);
 		hasCurrentQuestion ? isModified = isModified ||
@@ -1092,21 +1121,17 @@ function addQuestion(){
 			dataType: "json",
 			success: function(resp) {
 				$('#questionModal').toggle()
-				successMessage(isModified ? 'The question has been updated succesfully!' : 'The question has been sent succesfully!')
+				// successMessage(isModified ? 'The question has been updated succesfully!' : 'The question has been sent succesfully!')
+				successMessage(resp.success)
 				$('#questionModal').modal('hide')
-				if(isModified){
-					var questionIndex = all_questions.findIndex(elem => elem._id === resp._id)
-					if(questionIndex >= 0){
-						$('#questions').append(makeQuestionEntry(resp, questionIndex + 1, true, true, false))
-						$('#questions>')[questionIndex].remove()
-						all_questions[questionIndex] = resp
-					}else{
-						$('#questions').append(makeQuestionEntry(resp, $('#questions>').length + 1, true, true, false))
-						all_questions.push(resp)
-					}
+				var questionIndex = all_questions.findIndex(elem => elem._id === resp.data._id)
+				if(questionIndex >= 0){
+					$('#questions>')[questionIndex].after(makeQuestionEntry(resp.data, questionIndex + 1, true, true, false))
+					$('#questions>')[questionIndex].remove()
+					all_questions[questionIndex] = resp.data
 				}else{
-					$('#questions').append(makeQuestionEntry(resp, $('#questions>').length + 1, true, true, false))
-					all_questions.push(resp)
+					$('#questions').append(makeQuestionEntry(resp.data, $('#questions>').length + 1, true, true, false))
+					all_questions.push(resp.data)
 				}
 			},
 			error: function(resp) {
@@ -1123,11 +1148,14 @@ function makeFav(current){
 		data: {'id' : id },
 		dataType: "json",
 		success: function(resp) {
-			var currentSrc = current.src.split('/')
+			let currentSrc = current.src.split('/')
 			startType = currentSrc[currentSrc.length - 1]
-			var otherType = startType === 'star-grey.png' ? 'star-yellow.png' : 'star-grey.png'
+			let questionIndex = all_questions.findIndex(elem => elem._id === resp._id)
+			all_questions[questionIndex].isFavourite = startType === 'star-grey.png' ? true : false
+			let otherType = startType === 'star-grey.png' ? 'star-yellow.png' : 'star-grey.png'
 			currentSrc[currentSrc.length - 1] = otherType
 			current.src = currentSrc.join('/')
+			successMessage('The question has been added to favourites!')
 		},
 		error: function(resp) {
 			errorHandler(resp);
@@ -1260,7 +1288,7 @@ function changeTitleDesc(isTitle){
 			data: isTitle ? {'title' : title} : {'desc' : desc},
 			dataType: "json",
 			success: function(resp) {
-				successMessage(resp['success'])
+				successMessage(resp.success)
 			},
 			error: function(resp) {
 				errorHandler(resp);
@@ -1274,12 +1302,10 @@ function modifyForm(id){
 	window.location.href = '/forms/create/question/add'
 }
 function congrats(){
-	var ids = []
-	all_questions.forEach( elem => {ids.push(elem._id)})
 	$.ajax({
 		url: '/form/finish',
 		type: "POST",
-		data: {'ids' : ids},
+		data: {'questions' : JSON.stringify(all_questions)},
 		dataType: "json",
 		success: function(resp) {
 			successMessage('All changes has been saved!'),
@@ -1383,7 +1409,6 @@ function sendSurvey(){
 		'form_id' : session.current_form_id,
 		'answers' : JSON.stringify(answers)
 	}
-	console.log(data)
 	$.ajax({
 		url: '/survey',
 		type: "POST",

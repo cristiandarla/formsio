@@ -66,7 +66,7 @@ def result_form(guid):
 @login_required
 def submit_form():
   return Form.submit_form()
-@app.route('/forms/subject', methods=['POST'])
+@app.route('/forms/title', methods=['POST'])
 @login_required
 def change_title():
   return Form.change_title()

@@ -32,6 +32,10 @@ def fav_question():
 @login_required
 def get_fav_question():
   return Question.get_fav_question()
+@app.route('/question/fav/add', methods=['POST'])
+@login_required
+def add_fav_question():
+  return Question.add_fav_question()
 @app.route('/forms/create/question/get', methods=['POST'])
 @login_required
 def get_questions():

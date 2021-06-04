@@ -1,22 +1,18 @@
 from flask import Flask, jsonify, request, session, redirect
 from formsio_app.app import db
-import uuid, os
+import uuid, os, json
 
 class Form:
 
 	def finish_form():
-		ids = request.form.getlist('ids[]')
-		for index, element in enumerate(ids):
-			if index < len(ids) - 1:
-				if db.questions.update({'_id' : element}, {'$set' : {'trailing_question' : ids[index + 1], 'position' : index}}):
-					pass
-				else:
-					return jsonify({'error' : 'There was an error on updating the questions!'}), 400
+		questions = json.loads(request.form.to_dict()['questions'])
+		for question in questions:
+			id = question['_id']
+			del question['_id']
+			if db.questions.update({'_id' : id}, {'$set' : question}):
+				pass
 			else:
-				if db.questions.update({'_id' : element}, {'$set' : {'trailing_question' : None, 'position' : index}}):
-					pass
-				else:
-					return jsonify({'error' : 'There was an error on updating the questions!'}), 400
+				return jsonify({'error' : 'There was an error on updating the questions!'}), 400
 		return jsonify({'success': 'Everything went well on updating the questions!'}), 200
 		
 	def change_title():
