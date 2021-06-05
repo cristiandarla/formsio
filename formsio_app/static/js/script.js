@@ -523,7 +523,13 @@ $.ajax({
 		});
 	
 		$('#survey-btn').on('click', function(e){
-			window.location.href = `/survey/${session.current_form_id}`
+			const el = document.createElement('textarea');
+			el.value = `${window.location.origin}/survey/${session.current_form_id}`;
+			document.body.appendChild(el);
+			el.select();
+			document.execCommand('copy');
+			document.body.removeChild(el);
+			successMessage(`The link has been copied for the current form: ${session.form_title}`)
 		})
 	
 	});
@@ -957,12 +963,15 @@ function makeQuestionEntry(question, id, hasExtra, popupQuestion, answers, isFav
 	
 			icons.appendChild(img)
 			icons.appendChild(deleteDiv)
+		firstDiv.classList.add('question-entry_data-3')
+	}else{
+		firstDiv.classList.add('question-entry_data-2')
 	}
 
 	firstDiv.appendChild(noDiv)
 	firstDiv.appendChild(attributesDiv)
 	firstDiv.appendChild(icons)
-	
+
 	var secondDiv = document.createElement('div')
 		secondDiv.setAttribute('class', 'question-entry_data')
 	secondDiv.appendChild(document.createElement('div'))
@@ -972,7 +981,11 @@ function makeQuestionEntry(question, id, hasExtra, popupQuestion, answers, isFav
 		trailing.setAttribute('id', `trailing-${question._id}`)
 		trailing.style.display = 'flex'
 	secondDiv.appendChild(trailing)
-
+	if(MULTIPLE_CHOICE.includes(question.question_type)){
+		secondDiv.classList.add('question-entry_data-3')
+	}else{
+		secondDiv.classList.add('question-entry_data-1')
+	}
 	div.appendChild(firstDiv) 
 	div.appendChild(secondDiv)
 	if(isFavourite){
